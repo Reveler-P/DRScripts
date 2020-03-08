@@ -35,7 +35,7 @@
 
 
 
-DEBUG 10
+#DEBUG 10
 pause 0.2
 put .BurgleVariables
 pause 0.2
@@ -64,6 +64,7 @@ var footsteps OFF
 var successful 0
 var grabs 0
 var moves 0
+var surface
 var guards Gwaerd|guard|Shard sentinel|Sentinel|Elven Warden|Riverhaven Warden|Warden|Baronial guardsman|sickly tree|Muspar'i constable
 var item1 NULL
 var item2 NULL
@@ -78,7 +79,7 @@ var kitchenloot bowl|sieve|stove|stick|mortar|pestle|helm|knife|towel|broom|skil
 var bedroomloot pajamas|cloak|fabric|bathrobe|cube|comb|locket|bangles|box|bear|handkerchief|blanket|pillow|mirror
 var armoryloot stones|arrows|bolts|plate|gloves|hauberk|leathers|shield|briquet|scimitar|cudgel|crossbow|dagger|longsword|stick|hammer|sipar
 var workroomloot rod|burin|shaper|rasp|oil|apron|brush|scissors|pins|distaff|case|ledger
-var sanctumloot bracer|ring|amulet|blossom|statuette|charts|opener|orb|kaleidoscope|rod|ball|case|telescope|prism
+var sanctumloot bracer|ring|amulet|blossom|statuette|charts|opener|orb|kaleidoscope|rod|ball|case|telescope|prism|lens
 var libraryloot paperweight|slate|manual|guide|cowbell|harp|book|ring|case|fan|leaflet|scroll|portrait|quill|lamp
 var lootpool %kitchenloot|%bedroomloot|%armoryloot|%workroomloot|%sanctumloot|%libraryloot
 ######## DON'T TOUCH LINES ABOVE
@@ -209,7 +210,6 @@ GETREADY:
 	if ($standing = 0) then 
 	{
 		matchre WAIT \.\.\.wait|still stunned|^Sorry, you may only|The weight of
-		matchre RETURN ^You stand|^You are already standing\.$
 		put stand
 		matchwait 5
 		GOSUB ERROR STANDING
@@ -313,7 +313,6 @@ SEARCH:
 		math grabs add 1
 		var searched %searched|%surface
 		gosub put search %surface
-		pause 0.5		   
 	}
 	else var searched %surface
 	gosub STOWLOOT
@@ -325,7 +324,6 @@ NEXTSEARCH:
 	var roomexits 0
 	if ("%footsteps" = "ON") then goto LEAVE
 	math moves add 1
-	pause 0.1		  
 	if (($north = 1) && ("%reverse(%priorgrab)" != "north") && !matchre("%priorexit(%room)","north")) then
 	{
 		var direction(%moves) north
@@ -392,8 +390,6 @@ NEXTSEARCH:
 	goto SEARCH
 	
 MOVEROOMS:
-	pause .1
-	pause .01
 	var movement $0
 	MOVEROOMS1:
 	var last MOVEROOMS1
@@ -405,7 +401,6 @@ MOVEROOMS:
 	
 	
 LEAVE:
-	pause .1
 	var last leave
 	if matchre("$roomname", "Kitchen") then 
 	{
@@ -415,7 +410,6 @@ LEAVE:
 	put go window
 	matchwait 3
 	}
-	pause 0.1		  
 	gosub moverooms %reverse(%moves)
 	math moves subtract 1
 	goto LEAVE
