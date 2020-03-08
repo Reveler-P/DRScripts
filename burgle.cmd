@@ -1,0 +1,781 @@
+## Reveler's Burgle Script
+## v.4.2
+## 03/07/2020
+## Discord Reveler#6969
+##
+## TO USE:  
+##		FIRST SET YOUR VARIABLES IN BURGLEVARIABLES.CMD
+##		If travel is off, go to an appropriate room
+##		The script will check if there is a guard in the room
+##		PLEASE MESSAGE ME IF YOU FIND A GUARD NOT LISTED IN THE GUARD VARIABLE BELOW OR LOOT NOT LISTED IN LOOT VARIABLES BELOW
+##		YOU need to confirm there's no guard in NEARBY rooms (hint: HUNT or be sure it's a no-guard room)
+##		hit .burgle and go at it!
+##		
+##
+##		You need to have the latest .travel script if you want to set a burgle location
+##      You need to have Spelltimer plugin for buff checks
+##		DISCLAIMER: NOT RESPONSIBLE FOR YOUR ASTRONOMICAL FINES
+
+##		V 4.2 updates
+##		Robustified actions to test for errors
+##		More guard checks
+##		More options for worn/stored lockpick rings and ropes
+##		Added multi room search; will still leave immediately when you hear footsteps (after rt); specify number of times to search in maxgrabs variable
+##		Cleaned up a few RT issues
+##		Cleaned up a few issues that appear when there's lag
+##		Moved travel module to after burgle timer check
+## 		Thief Upgrades to Khri by Azarael
+## 		Ability to have script wait for Burgle timer by Azarael
+## 		Integration of Globals for setting user variables by Azarael
+##		Logic for pawning and item capture provided by Shroom
+##		Moved variables to separate file to avoid errors
+##      Robustified matches to avoid errors
+##      Will remain hidden when searching first room to optimize stealth
+##		Added variables for loot - if not using ubercombat pawning you can choose the loot to keep and not pawn
+
+
+
+DEBUG 10
+pause 0.2
+put .BurgleVariables
+pause 0.2
+
+
+action math successful add 1 when ^You rummage around (.*)\, until you find 
+action var footsteps ON when ^Footsteps nearby make you wonder if you\'re pushing your luck\.
+#action instant goto LEAVE when ^Footsteps nearby make you wonder
+action var surface counter when ^\[Someone Else\'s Home\, Kitchen\]$
+action var room kitchen when Kitchen\]$
+action var surface bed when ^\[Someone Else\'s Home\, Bedroom\]$
+action var room bedroom when Bedroom\]$
+action var surface table when ^\[Someone Else\'s Home\, Work Room\]$
+action var room workroom when Work Room\]$
+action var surface desk when ^\[Someone Else\'s Home\, Sanctum\]$
+action var room sanctum when Sanctum\]$
+action var surface rack when ^\[Someone Else\'s Home\, Armory\]$
+action var room armory when Armory\]$
+action var surface bookshelf when ^\[Someone Else\'s Home\, Library\]$
+action var room library when Library\]$
+action instant goto JAIL when ^Before you really realize what\'s going on\, your hands are firmly bound behind you and you are marched off\.$
+action goto PLEA when ^The eyes of the court|PLEAD INNOCENT or PLEAD GUILTY|Your silence shall be taken|How do you plead\?
+action instant var fine 0;var platfine 0;var goldfine 0;var silverfine 0;var bronzefine 0;var copperfine 0;if ($1) then evalmath platfine $1*10000;if ($2) then evalmath goldfine $2*1000;if ($3) then evalmath silverfine $3*100;if ($4) then evalmath bronzefine $4*10;if ($5) then var copperfine $5;evalmath fine %platfine+%goldfine+%silverfine+%bronzefine+%copperfine when ^I pronounce a fine upon you of (?:(\d+) platinum[,.]?)?(?:(?: and)? ?(\d+) gold[,.]?)?(?:(?: and)? ?(\d+) silver[,.]?)?(?:(?: and)? ?(\d+) bronze[,.]?)?(?:(?: and)? ?(\d+) copper\.)?
+action goto DONE when ^You take a moment to reflect on the caper
+var footsteps OFF
+var successful 0
+var grabs 0
+var moves 0
+var guards Gwaerd|guard|Shard sentinel|Sentinel|Elven Warden|Riverhaven Warden|Warden|Baronial guardsman|sickly tree|Muspar'i constable
+var item1 NULL
+var item2 NULL
+var item3 NULL
+var item4 NULL
+var item5 NULL
+var item6 NULL
+var rooms_captured kitchen
+var pawnmoveloop 0
+if ($standing = 0) then put stand
+var kitchenloot bowl|sieve|stove|stick|mortar|pestle|helm|knife|towel|broom|skillet|lunchbox|cylinder|sphere
+var bedroomloot pajamas|cloak|fabric|bathrobe|cube|comb|locket|bangles|box|bear|handkerchief|blanket|pillow|mirror
+var armoryloot stones|arrows|bolts|plate|gloves|hauberk|leathers|shield|briquet|scimitar|cudgel|crossbow|dagger|longsword|stick|hammer|sipar
+var workroomloot rod|burin|shaper|rasp|oil|apron|brush|scissors|pins|distaff|case|ledger
+var sanctumloot bracer|ring|amulet|blossom|statuette|charts|opener|orb|kaleidoscope|rod|ball|case|telescope|prism
+var libraryloot paperweight|slate|manual|guide|cowbell|harp|book|ring|case|fan|leaflet|scroll|portrait|quill|lamp
+var lootpool %kitchenloot|%bedroomloot|%armoryloot|%workroomloot|%sanctumloot|%libraryloot
+######## DON'T TOUCH LINES ABOVE
+
+
+#### RUN .BURGLEVARIABLES TO SET THESE UP FOR EACH CHARACTER OR JUST FILL THEM IN HERE #####
+var pack $BURGLE.PACK
+var method $BURGLE.METHOD
+var ringtype $BURGLE.RINGTYPE
+var ropetype $BURGLE.ROPETYPE
+var worn $BURGLE.WORN
+var travel $BURGLE.TRAVEL
+var maxgrabs $BURGLE.MAXGRABS
+var keep $BURGLE.KEEP
+
+if !matchre("%method", "(?i)(RING|ROPE|LOCKPICK)") then
+{
+echo ERROR WITH VARIABLE FOR BNE METHOD
+goto end
+}
+
+
+
+
+CHECKTIMER:
+	var last CHECKTIMER
+	matchre NOTYET ^You should wait at least (.+) roisaen for the heat to die down\.
+	matchre TRAVEL ^The heat has died down from your last caper\.
+	matchre WAIT \.\.\.wait|still stunned|^Sorry, you may only
+	put burgle recall
+	matchwait
+	
+TRAVEL:
+	if matchre("%travel" = "(?i)NULL") then goto BUFF
+	else put .travel %travel
+	waitforre ^YOU ARRIVED\!
+	
+BUFF:
+	if ("$guild"="Thief") then
+	{
+		match KHRICLEAR ^Your recent use of
+		send khri check
+		matchwait 3
+		if ($concentration < 55) then gosub CONC_REGEN
+		if ($SpellTimer.KhriSilence.active = 0) then gosub KHRI SILENCE
+		if ($SpellTimer.KhriPlunder.active = 0) then gosub KHRI PLUNDER
+		if ($SpellTimer.KhriSlight.active = 0) then gosub KHRI SLIGHT
+		if ($SpellTimer.KhriHasten.active = 0) then gosub KHRI HASTEN
+	}
+	if ("$guild"="Necromancer") then
+	{
+		if ($SpellTimer.RiteofContrition.active = 0) then put release cyclic
+		if ($SpellTimer.RiteofContrition.active = 0) then gosub CAST ROC
+		if ($SpellTimer.EyesoftheBlind.active = 0) then gosub CAST EOTB
+	}
+	if ("$guild"="Moon Mage") then 
+	{
+		if ($SpellTimer.RefractiveField.active = 0) then gosub CAST RF
+	}
+	goto GETREADY
+
+KHRI:
+	var khri $0
+	KHRI1:
+	var last KHRI1
+	matchre KNEEL ^\[Sitting\, kneeling\, or lying down can make starting this khri easier\.\]
+	matchre RETURN ^Your hand twitches|^Slipping into the proper|^Centering your mind|^Turning inwards
+	matchre RETURN ^You have not recovered from your previous use|^Your body is willing, but|^You're already using
+	matchre WAIT \.\.\.wait|still stunned|^Sorry, you may only
+	put khri %khri
+	matchwait 5
+	GOSUB ERROR KHRI
+ 
+KHRICLEAR:
+	matchre KHRICLEAR ^You focus your attention
+	matchre KHRIWAIT ^Your thoughts
+	matchre KHRICLEAR \.\.\.wait|still stunned|^Sorry, you may only
+	send khri med
+	matchwait
+	
+KHRIWAIT:
+	pause 60
+	goto BUFF
+	
+KNEEL:
+	var last KNEEL
+	matchre WAIT \.\.\.wait|still stunned|^Sorry, you may only
+	matchre KHRI1 ^You kneel|^You are already kneeling
+	put kneel
+	matchwait 5
+	GOSUB ERROR KNEELING
+	
+CAST:
+	var spell $0
+	var last CAST
+	CAST1:
+	pause .1
+	matchre GETREADY ^You have no training in the magical arts\.
+    matchre GETREADY ^You have no idea how to cast that spell\.
+	put prepare %spell
+	matchwait 5
+	if ("$preparedspell" = "NONE") then goto CAST1
+	CAST2:
+	pause 10
+	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+    matchre RETURN ^You gesture
+    matchre RETURN ^Roundtime\:?|^\[Roundtime\:?|^\(Roundtime\:?|^\[Roundtime|^Roundtime
+    matchre RETURN ^You raise your hand in an imaginary
+    matchre RETURN ^You don't have a spell prepared\!
+    matchre RETURN ^Your spell pattern collapses
+    matchre RETURN ^With a wave of your hand,
+    matchre RETURN ^Your target pattern dissipates
+    matchre RETURN ^You wave your hand\.
+    matchre RETURN ^You place your hands on your temples
+    matchre RETURN ^A newfound fluidity of your mind
+    matchre RETURN ^With a flick of your wrist,
+    matchre RETURN ^You make a holy gesture
+    matchre RETURN ^You raise your palms and face to the heavens
+    matchre RETURN ^You have difficulty manipulating the mana streams, causing the spell pattern to collapse at the last moment\.
+    matchre RETURN ^You strain
+	put cast
+	matchwait 5
+	return
+
+GETREADY:
+	var last GETREADY
+	gosub EMPTYHANDS
+	if ($standing = 0) then 
+	{
+		matchre WAIT \.\.\.wait|still stunned|^Sorry, you may only|The weight of
+		matchre RETURN ^You stand|^You are already standing\.$
+		put stand
+		matchwait 5
+		GOSUB ERROR STANDING
+	}
+
+	if matchre("%method", "(?i)RING") && matchre("%worn", "(?i)(YES|ON|1)") then
+	{
+		matchre HIDEPREP ^You tap (.+) you are wearing
+		matchre NOTWORN ^You tap (.*) in your
+		matchre NORING ^I could not|^What
+		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+		put tap my %ringtype
+		matchwait 3
+		gosub ERROR LOCKPICKS
+	}
+	if matchre("%method", "(?i)RING") && matchre("%worn", "(?i)(NO|NULL|OFF|0)") then
+	{
+		matchre WORN ^But that is
+		matchre HIDEPREP ^You get
+		matchre HIDEPREP ^You are already holding that\.
+		matchre NORING ^I could not|^What
+		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+		put get my %ringtype
+		matchwait 3
+		gosub ERROR LOCKPICKS
+	}
+	if matchre("%method", "(?i)LOCKPICK") then
+	{
+		matchre HIDEPREP ^You get
+		matchre HIDEPREP ^You are already holding that\.
+		matchre NOLOCKPICK ^I could not|^What
+		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+		put get my lockpick
+		matchwait 3
+		gosub ERROR LOCKPICKS
+	}
+	if matchre("%method", "(?i)ROPE") && matchre("%worn", "(?i)(YES|ON|1)") then
+	{
+		matchre HIDEPREP ^You sling
+		matchre HIDEPREP ^You aren\'t
+		matchre NOTWORN ^Remove what
+		matchre NOROPE ^I could not|^What
+		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+		put remove my %ropetype
+		matchwait 3
+		gosub ERROR LOCKPICKS
+	}
+	if matchre("%method", "(?i)ROPE") && matchre("%worn", "(?i)(NO|NULL|OFF|0)") then
+	{
+		matchre HIDEPREP ^You get
+		matchre HIDEPREP ^You are already holding that\.
+		matchre NOROPE ^I could not|^What
+		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+		put get my %ropetype
+		matchwait 3
+		gosub ERROR ROPE
+	}
+	gosub error METHOD_VARIABLE
+	
+NOTWORN:
+	var worn NO
+	goto %last
+
+WORN:
+	var worn YES
+	goto %last
+	
+HIDEPREP:
+	if matchre("$roomobjs","(%guards)") then goto GUARDABORT
+	var hidecount 0
+HIDE:
+	if (($hidden = 0) && ($invisible = 0)) then
+	{
+		put hide
+		pause
+		pause .1
+		math hidecount add 1
+		if (($hidden = 0) && (%hidecount < 3)) then goto HIDE
+		if (($hidden = 0) && ($invisible = 0)) then goto NOHIDE
+	}
+	if (($hidden = 1) || ($invisible = 1)) then goto BURGLE
+	goto ERROR HIDING
+
+BURGLE:
+	var last BURGLE
+	if matchre("$roomobjs","(%guards)") then goto GUARDABORT
+	matchre NOBURGLE ^You don't see any likely marks in the area\.
+	matchre SEARCH ^\[Someone Else\'s Home\,
+	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+#	matchre SEARCH ^You make short work of the lock
+#	matchre SEARCH ^You scale up the side of a wall
+	put burgle
+	matchwait 5
+	gosub ERROR ENTERING HOME
+
+SEARCH:
+	if !matchre("%rooms_captured", "%room") then var rooms_captured %rooms_captured|%room
+	if (%grabs = %maxgrabs)||("%footsteps" = "ON") then goto LEAVE
+	if !matchre("%surface", "%searched") then 
+	{
+		math grabs add 1
+		var searched %searched|%surface
+		gosub put search %surface
+		pause 0.5		   
+	}
+	else var searched %surface
+	gosub STOWLOOT
+	if ("%footsteps" = "OFF")&&(%grabs < %maxgrabs) then goto NEXTSEARCH
+	goto LEAVE
+	
+NEXTSEARCH:
+	var priorgrab %moves
+	var roomexits 0
+	if ("%footsteps" = "ON") then goto LEAVE
+	math moves add 1
+	pause 0.1		  
+	if (($north = 1) && ("%reverse(%priorgrab)" != "north") && !matchre("%priorexit(%room)","north")) then
+	{
+		var direction(%moves) north
+		var reverse(%moves) south
+		var priorexit(%room) north|%priorexit(%room)
+		var roomexits 1
+	}
+	if (($east = 1) && ("%reverse(%priorgrab)" != "east") && (%roomexits = 0) && !matchre("%priorexit(%room)","east")) then
+	{
+		var direction(%moves) east
+		var reverse(%moves) west
+		var priorexit(%room) east|%priorexit(%room)
+		var roomexits 1
+	}
+	if (($south = 1) && ("%reverse(%priorgrab)" != "south") && (%roomexits = 0) && !matchre("%priorexit(%room)","south")) then
+	{
+		var direction(%moves) south
+		var reverse(%moves) north
+		var priorexit(%room) south|%priorexit(%room)
+		var roomexits 1
+	}
+	if (($west = 1) && ("%reverse(%priorgrab)" != "west") && (%roomexits = 0) && !matchre("%priorexit(%room)","west")) then
+	{
+		var direction(%moves) west
+		var reverse(%moves) east
+		var priorexit(%room) west|%priorexit(%room)
+		var roomexits 1
+	}
+	if (($northeast = 1) && ("%reverse(%priorgrab)" != "northeast") && (%roomexits = 0) && !matchre("%priorexit(%room)","northeast")) then
+	{
+		var direction(%moves) northeast
+		var reverse(%moves) southwest
+		var priorexit(%room) northeast|%priorexit(%room)
+		var roomexits 1
+	}
+	if (($northwest = 1) && ("%reverse(%priorgrab)" != "northwest") && (%roomexits = 0) && !matchre("%priorexit(%room)","northwest")) then
+	{
+		var direction(%moves) northwest
+		var reverse(%moves) southeast
+		var priorexit(%room) northwest|%priorexit(%room)
+		var roomexits 1
+	}
+	if (($southeast = 1) && ("%reverse(%priorgrab)" != "southeast") && (%roomexits = 0) && !matchre("%priorexit(%room)","southeast")) then
+	{
+		var direction(%moves) southeast
+		var reverse(%moves) northwest
+		var priorexit(%room) southeast|%priorexit(%room)
+		var roomexits 1
+	}
+	if (($southwest = 1) && ("%reverse(%priorgrab)" != "southwest") && (%roomexits = 0) && !matchre("%priorexit(%room)","southwest")) then
+	{
+		var direction(%moves) southwest
+		var reverse(%moves) northeast
+		var priorexit(%room) southwest|%priorexit(%room)
+		var roomexits 1
+	}
+	if (%roomexits = 0) then 
+	{
+		var direction(%moves) %reverse(%priorgrab)
+		var reverse(%moves) %direction(%priorgrab)
+		var priorexit(%room) %reverse(%priorgrab)|%priorexit(%room)
+	} 
+	gosub MOVEROOMS %direction(%moves)
+	goto SEARCH
+	
+MOVEROOMS:
+	pause .1
+	pause .01
+	var movement $0
+	MOVEROOMS1:
+	var last MOVEROOMS1
+	matchre RETURN ^Obvious
+	matchre RETURN ^You can't
+	matchre WAIT \.\.\.wait
+	put %movement
+	matchwait 5
+	
+	
+LEAVE:
+	pause .1
+	var last leave
+	if matchre("$roomname", "Kitchen") then 
+	{
+	matchre DONE ^You take a moment to reflect on the caper you just pulled as you slip out the kitchen window\.\.\.
+	matchre ERROR ^What were you referring to\? 
+	matchre WAIT \.\.\.wait
+	put go window
+	matchwait 3
+	}
+	pause 0.1		  
+	gosub moverooms %reverse(%moves)
+	math moves subtract 1
+	goto LEAVE
+
+DONE:
+	gosub STOWLOOT
+	echo ###################################
+	echo #####
+	echo #####       FINISHED BURGLING.
+	echo #####       Made %grabs attempts
+	echo #####       Found %successful items
+     if ("%item6" != "NULL") then 
+          {
+               echo #####       Items: %item1, %item2, %item3, %item4, %item5, %item6
+               goto DONE_2
+          }
+     if ("%item5" != "NULL") then 
+          {
+               echo #####       Items: %item1, %item2, %item3, %item4, %item5
+               goto DONE_2
+          }
+     if ("%item4" != "NULL") then 
+          {
+               echo #####       Items: %item1, %item2, %item3, %item4
+               goto DONE_2
+          }
+     if ("%item3" != "NULL") then 
+          {
+               echo #####       Items: %item1, %item2, %item3
+               goto DONE_2
+          }
+     if ("%item2" != "NULL") then 
+          {
+               echo #####       Items: %item1, %item2
+               goto DONE_2
+          }
+     if ("%item1" != "NULL") then 
+          {
+               echo #####       Items: %item1
+               goto DONE_2
+          }
+DONE_2:
+	echo #####       Thievery: $Thievery.LearningRate/34
+	echo #####       Stealth: $Stealth.LearningRate/34
+	if matchre("%method", "(?i)ROPE") then echo #####       Athletics: $Athletics.LearningRate/34
+	if matchre("%method", "(?i)(LOCKPICK|RING)") then echo #####       Locksmithing: $Locksmithing.LearningRate/34
+	echo #####
+	echo ###################################
+    if matchre("$BURGLE.PAWN", "(?i)(YES|ON|1)") then goto PAWN
+DONE_3:
+	matchre burgletimer ^You should wait at least (.+) roisaen for the heat to die down\.
+	put burgle recall
+	matchwait 5
+	
+BURGLETIMER:
+	put #echo >log red New Burgle Cooldown: $1 Rois
+	put #echo >log red Burgled %successful items
+	put #echo >log red Found following rooms: %rooms_captured
+	     if ("%item3" != "NULL") then 
+          {
+               put #echo >log red Found: %item1, %item2, %item3
+               goto END
+          }
+     if ("%item2" != "NULL") then 
+          {
+               put #echo >log red Found: %item1, %item2
+               goto END
+          }
+     if ("%item1" != "NULL") then 
+          {
+               put #echo >log red Found: %item1
+               goto END
+          }
+     if ("%item1" != "NULL") then 
+          {
+               put #echo >log red No successful searches
+               goto END
+          }
+	goto END
+	
+PAWN:
+	 var last pawn
+     if matchre("$BURGLE.PAWN", "(?i)(NO|NULL|0|OFF)") then goto DONE_3
+	 if ("%successful" = 0) then 
+	 {
+		echo ######################
+		echo ##### No finds, skipping pawning
+		echo ######################
+		goto DONE_3
+	 }
+     echo #
+     echo #
+     echo #
+     echo ######################
+     echo ##### PAWNING BURGLED ITEMS!
+     echo ######################
+     pause 0.1
+	 PAWN_1:
+	 matchre PAWN_2 ^YOU HAVE ARRIVED\!
+	 matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+	 matchre PAWNMOVELOOP ^MOVE FAILED
+	 matchre PAWNMOVELOOP ^DESTINATION NOT FOUND
+     put #goto pawn
+	 matchwait 15
+	 goto PAWNMOVELOOP
+PAWN_2:
+     if ($invisible = 1) then gosub STOP_INVIS
+	 var n 1
+     pause 0.5
+	 pawnloop:
+     if ("%item%n" != "NULL") then gosub PAWN_IT %item%n
+	 if (%n <= %successful) then goto pawnloop
+	 goto DONE_3
+PAWN_IT:
+if (!matchre("%item%n", "$BURGLE.KEEP")) then
+{
+gosub put get %item%n from my %pack
+gosub put sell %item%n
+gosub EMPTYHANDS
+}
+math n add 1
+return
+PAWNMOVELOOP:
+	math pawnmoveloop add 1
+	if (%pawnmoveloop = 3) then 
+	{
+     echo ######################
+     echo ##### PAWNING FAILED - NO PAWN SHOP?
+     echo ######################
+	 goto DONE_3
+	}
+	goto PAWN_1
+
+##### UTILITY MODULES
+CONC_REGEN:
+	pause
+	gosub put khri stop
+	pause .1
+	put hide
+CONC_REGEN1:
+	pause 10
+	put khri meditate
+	pause .1
+	if ($concentration > 75) then return
+	goto CONC_REGEN1
+	
+
+EMPTYHANDS:
+	if matchre("$righthandnoun|$lefthandnoun", "(?i)rope") && matchre("%worn", "(?i)(YES|ON)") then gosub put wear rope
+	if matchre("$righthandnoun|$lefthandnoun", "(?i)rope") && matchre("%worn", "(?i)(NO|NULL|OFF)") then gosub put stow rope
+	if matchre("$righthandnoun|$lefthandnoun", "(?i)lockpick") then gosub put stow lockpick
+	if matchre("$righthandnoun|$lefthandnoun", "%ringtype") && matchre("%worn", "(?i)(YES|ON)") then gosub put wear %ringtype
+	if matchre("$righthandnoun|$lefthandnoun", "%ringtype") then gosub put stow %ringtype
+	if !matchre("$righthand", "Empty") then gosub put stow right
+	if !matchre("$lefthand", "Empty") then gosub put stow left
+    pause 0.4
+	return
+
+STOWLOOT:
+	if matchre("$righthandnoun|$lefthandnoun", "(?i)rope") && matchre("%worn", "(?i)(YES|ON)") then gosub put wear rope
+	if matchre("$righthandnoun|$lefthandnoun", "(?i)rope") && matchre("%worn", "(?i)(NO|NULL|OFF)") then gosub put stow rope
+	if matchre("$righthandnoun|$lefthandnoun", "(?i)lockpick") then gosub put stow lockpick
+	if matchre("$righthandnoun|$lefthandnoun", "%ringtype") && matchre("%worn", "(?i)(YES|ON)") then gosub put wear %ringtype
+	if matchre("$righthandnoun|$lefthandnoun", "%ringtype") then gosub put stow %ringtype
+	if !matchre("$righthand", "Empty") then 
+          {
+               if matchre("$righthandnoun", "%lootpool") then gosub ITEM_SET $righthand
+			   gosub PUTLOOT put my $righthandnoun in my %pack
+			   if (!matchre("$righthand", "Empty") && matchre("$righthandnoun", "%lootpool")) then put empty right
+			   
+          }
+	if !matchre("$lefthand", "Empty") then 
+          {
+               if matchre("$lefthandnoun", "%lootpool") then gosub ITEM_SET $lefthand
+               gosub PUTLOOT put my $lefthandnoun in my %pack
+			   if (!matchre("$righthand", "Empty") && matchre("$lefthandnoun", "%lootpool")) then put empty left
+          }
+    pause 0.4
+	return
+     
+ITEM_SET:
+     var thing $0
+     var j 1
+ITEM_SET_1:
+     if ("%item%j" = "NULL") then
+          {
+               var item%j %thing
+               put #tvar BurgleItem%j %thing
+               return
+          }
+     math j add 1
+     if (%j > 6) then return
+     goto ITEM_SET_1
+PUT:
+	var put $0
+	PUT_1:
+	var last PUT_1
+	pause .1
+	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+    matchre RETURN ^You put|^You sling|^You attach|^You attempt to relax|^You rummage|^What were|^You sell|^You get
+	matchre NOWEAR ^You can\'t wear
+	matchre LEAVE ^You\'re going to need a free hand to rummage around in there\.
+	matchre STORAGEERROR ^But that\'s closed|^That\'s too heavy|too long to fit
+	put %put
+	matchwait 5
+	return
+	
+PUTLOOT:
+	var put $0
+	PUTLOOT_1:
+	var last PUTLOOT_1
+	pause .1
+	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+    matchre RETURN ^You put|^You sling|^You attach|^You attempt to relax|^You rummage|^What were|^You sell|^You get
+	matchre NOWEAR ^You can\'t wear
+	matchre RETURN ^But that\'s closed|^That\'s too heavy|too long to fit
+	put %put
+	matchwait 5
+	return
+	
+STORAGEERROR:
+	echo ###################################
+	echo #####
+	echo #####       ERROR WITH STORAGE? LEAVING
+	echo #####
+	echo ###################################
+	goto LEAVE
+
+WAIT:
+	pause .01
+	goto %last
+	
+NOWEAR:
+	var worn NO
+	goto EMPTYHANDS
+	
+JAIL:
+	put kick pile
+	put collect dust bunny
+	pause .5
+	goto JAIL
+	
+PLEA:
+	pause .1
+    matchre PLEA ^\.\.\.wait|^Sorry\,
+	matchre TAKEOVER ^After a weighty pause\, 
+	put plead guilty
+	matchwait 5
+
+STOPINVIS:
+STOP_INVIS:
+     delay 0.001
+     echo *** Removing Invis..
+     if ("$guild" = "Necromancer") then
+          {
+               gosub PUT release eotb
+               pause 0.3
+          }
+     if ("$guild" = "Thief") then
+          {
+               gosub PUT khri stop silence vanish
+               pause 0.3
+          }
+     if ("$guild" = "Moon Mage") then
+          {
+               gosub PUT release rf
+               pause 0.3
+          }
+     pause 0.3
+     return
+
+TAKEOVER: 
+	echo ###################################
+	echo #####
+	echo #####       JAILED - FINE: %fine
+	echo #####
+	echo ###################################
+	put 
+	goto DONE
+	
+RETURN:
+	return
+
+##### ERROR MODULES
+
+NOBURGLE:
+	echo ###################################
+	echo #####
+	echo #####       Not a valid place to burgle.
+	echo #####
+	echo #####
+	echo ###################################
+	goto END
+
+NORING:
+	echo ###################################
+	echo #####
+	echo #####       No Lockpick Ring?
+	echo #####
+	echo #####
+	echo ###################################
+	goto END
+
+NOLOCKPICK:
+NORING:
+	echo ###################################
+	echo #####
+	echo #####       No Lockpick?
+	echo #####
+	echo #####
+	echo ###################################
+	goto END
+
+NOROPE:
+	echo ###################################
+	echo #####
+	echo #####       No Climbing Rope?
+	echo #####
+	echo #####
+	echo ###################################
+	goto END
+
+NOHIDE:
+	echo ###################################
+	echo #####
+	echo #####       Could not hide, not invisible
+	echo #####          Try a different room
+	echo #####
+	echo #####
+	echo ###################################
+	goto END
+
+GUARDABORT:
+	echo ###################################
+	echo #####
+	echo #####       There's a guard in the room!
+	echo #####          PAY ATTENTION NEWB
+	echo #####
+	echo #####
+	echo ###################################
+	goto END
+
+NOTYET:
+	echo ###################################
+	echo #####
+	echo #####       STILL ON COOLDOWN
+	echo #####          WAIT $1 ROIS
+	echo #####
+	echo #####
+	echo ###################################
+	waitfor A tingling on the back of your neck draws attention
+	goto CHECKTIMER
+ERROR: 
+	echo ###################################
+	echo #####
+	echo #####       UNKNOWN ERROR WITH $0
+	echo #####
+	echo ###################################
+	goto END
+
+END:
+    put #parse SCRIPT FINISHED!
+	exit
