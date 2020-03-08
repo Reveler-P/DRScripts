@@ -1,2 +1,0 @@
-# DRScripts
-Dragonrealms scripts repository
