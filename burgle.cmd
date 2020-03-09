@@ -1,6 +1,6 @@
 ## Reveler's Burgle Script
-## v.4.2
-## 03/07/2020
+## v.4.3
+## 03/__/2020
 ## Discord Reveler#6969
 ##
 ## TO USE:  
@@ -16,7 +16,7 @@
 ##      You need to have Spelltimer plugin for buff checks
 ##		DISCLAIMER: NOT RESPONSIBLE FOR YOUR ASTRONOMICAL FINES
 
-##		V 4.2 updates
+##		V 4.3 updates
 ##		Robustified actions to test for errors
 ##		More guard checks
 ##		More options for worn/stored lockpick rings and ropes
@@ -32,6 +32,7 @@
 ##      Robustified matches to avoid errors
 ##      Will remain hidden when searching first room to optimize stealth
 ##		Added variables for loot - if not using ubercombat pawning you can choose the loot to keep and not pawn
+##		Disabled cooldown wait
 
 
 
@@ -209,10 +210,7 @@ GETREADY:
 	gosub EMPTYHANDS
 	if ($standing = 0) then 
 	{
-		matchre WAIT \.\.\.wait|still stunned|^Sorry, you may only|The weight of
-		put stand
-		matchwait 5
-		GOSUB ERROR STANDING
+		gosub STAND
 	}
 
 	if matchre("%method", "(?i)RING") && matchre("%worn", "(?i)(YES|ON|1)") then
@@ -629,7 +627,21 @@ PUTLOOT:
 	put %put
 	matchwait 5
 	return
-	
+
+STAND:
+     matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+     matchre WAIT ^Roundtime\:?|^\[Roundtime\:?|^\(Roundtime\:?|^\[Roundtime|^Roundtime
+     matchre WAIT ^The weight of all your possessions prevents you from standing\.
+     matchre WAIT ^You are overburdened and cannot manage to stand\.
+     matchre STAND_1 ^You stand 
+     matchre STAND_1 ^You are already 
+     matchre STAND_1 ^As you stand
+     put stand
+     matchwait 5
+     STAND_1:
+     if ($standing = 0) then goto STAND
+     return	
+
 STORAGEERROR:
 	echo ###################################
 	echo #####
@@ -760,8 +772,10 @@ NOTYET:
 	echo #####
 	echo #####
 	echo ###################################
-	waitfor A tingling on the back of your neck draws attention
-	goto CHECKTIMER
+#	waitfor A tingling on the back of your neck draws attention
+#	goto CHECKTIMER
+	goto END
+	
 ERROR: 
 	echo ###################################
 	echo #####
