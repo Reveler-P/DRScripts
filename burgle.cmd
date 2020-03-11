@@ -322,7 +322,7 @@ SEARCH:
 		if (("%footsteps" = "OFF") && ($hidden = 0) && ($invisible = 0) && matchre("%hideme", "(?i)(YES|ON|1)") then gosub PUT hide
 		if ("%footsteps" = "OFF") then
 		{
-			then gosub put search %surface
+			gosub put search %surface
 			math grabs add 1
 			var searched %searched|%surface
 		}
