@@ -37,7 +37,7 @@
 
 
 
-debug 10
+#debug 5
 
 
 pause 0.2
@@ -68,7 +68,14 @@ var footsteps OFF
 var successful 0
 var grabs 0
 var moves 0
-var surface
+var surface NULL
+var searched NULL
+var priorexit(kitchen)
+var priorexit(bedroom)
+var priorexit(workroom)
+var priorexit(sanctum)
+var priorexit(armory)
+var priorexit(library)
 var guards Gwaerd|guard|Shard sentinel|Sentinel|Elven Warden|Riverhaven Warden|Warden|Baronial guardsman|sickly tree|Muspar'i constable
 var item1 NULL
 var item2 NULL
@@ -303,7 +310,8 @@ BURGLE:
 	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
 #	matchre SEARCH ^You make short work of the lock
 #	matchre SEARCH ^You scale up the side of a wall
-	put burgle
+	if (($hidden = 1) || ($invisible = 1)) then put burgle
+	else goto HIDEPREP
 	matchwait 5
 	gosub ERROR ENTERING HOME
 
@@ -312,15 +320,12 @@ SEARCH:
 	if (!matchre("%surface", "%searched")) && (%grabs < %maxgrabs) && ("%footsteps" = "OFF") then 
 	{
 		if (("%footsteps" = "OFF") && ($hidden = 0) && ($invisible = 0) && matchre("%hideme", "(?i)(YES|ON|1)") then gosub PUT hide
-		if ("%footsteps" = "OFF") then var searched %searched|%surface
-		if ("%footsteps" = "OFF") then gosub put search %surface
-	}
-	if (!matchre("%surface", "%searched")) && (%grabs < %maxgrabs) && ("%footsteps" = "OFF") then 
-	{
-		math grabs add 1
-		var searched %searched|%surface
-		if ("%footsteps" = "OFF") then gosub put search %surface
-	}
+		if ("%footsteps" = "OFF") then
+		{
+			then gosub put search %surface
+			math grabs add 1
+			var searched %searched|%surface
+		}
 	if ("%footsteps" = "ON") then goto LEAVE
 	if ("%footsteps" = "OFF") then gosub STOWLOOT
 	if ("%footsteps" = "OFF")&&(%grabs < %maxgrabs) then goto NEXTSEARCH
@@ -535,7 +540,7 @@ if (!matchre("%item%n", "$BURGLE.KEEP")) then
 	{
 		gosub put get %item%n from my %pack
 		gosub put sell %item%n
-		gosub EMPTYHANDS
+		gosub put put %item%n in bucket
 	}
 	math n add 1
 	return
@@ -603,6 +608,7 @@ ITEM_SET:
 ITEM_SET_1:
      if ("%item%j" = "NULL") then
           {
+			   eval thing replacere("%thing", "^(\S+ )+(?=\S+ \S+)", "")
                var item%j %thing
                put #tvar BurgleItem%j %thing
                return
@@ -616,7 +622,7 @@ PUT:
 	var last PUT_1
 	pause .1
 	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
-    matchre RETURN ^You put|^You sling|^You attach|^You attempt to relax|^You rummage|^What were|^You sell|^You get
+    matchre RETURN ^You put|^You sling|^You attach|^You attempt to relax|^You rummage|^What were|^You sell|^You get|not worth anything to me\.\"$
 	matchre RETURN ^You slip into a hiding|^You melt into the background|^Eh\?  But you're already hidden\!|^You blend in with your surroundings
 	matchre NOWEAR ^You can\'t wear
 	matchre LEAVE ^You\'re going to need a free hand to rummage around in there\.
