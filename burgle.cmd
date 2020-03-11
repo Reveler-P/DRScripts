@@ -1,6 +1,6 @@
 ## Reveler's Burgle Script
-## v.4.3
-## 03/__/2020
+## v.4.4
+## 03/10/2020
 ## Discord Reveler#6969
 ##
 ## TO USE:  
@@ -16,7 +16,7 @@
 ##      You need to have Spelltimer plugin for buff checks
 ##		DISCLAIMER: NOT RESPONSIBLE FOR YOUR ASTRONOMICAL FINES
 
-##		V 4.3 updates
+##		V 4.4 updates
 ##		Robustified actions to test for errors
 ##		More guard checks
 ##		More options for worn/stored lockpick rings and ropes
@@ -33,10 +33,13 @@
 ##      Will remain hidden when searching first room to optimize stealth
 ##		Added variables for loot - if not using ubercombat pawning you can choose the loot to keep and not pawn
 ##		Disabled cooldown wait
+##		Added option to hide before search - set variable in variable script
 
 
 
-#DEBUG 10
+debug 10
+
+
 pause 0.2
 put .BurgleVariables
 pause 0.2
@@ -59,7 +62,7 @@ action var surface bookshelf when ^\[Someone Else\'s Home\, Library\]$
 action var room library when Library\]$
 action instant goto JAIL when ^Before you really realize what\'s going on\, your hands are firmly bound behind you and you are marched off\.$
 action goto PLEA when ^The eyes of the court|PLEAD INNOCENT or PLEAD GUILTY|Your silence shall be taken|How do you plead\?
-action instant var fine 0;var platfine 0;var goldfine 0;var silverfine 0;var bronzefine 0;var copperfine 0;if ($1) then evalmath platfine $1*10000;if ($2) then evalmath goldfine $2*1000;if ($3) then evalmath silverfine $3*100;if ($4) then evalmath bronzefine $4*10;if ($5) then var copperfine $5;evalmath fine %platfine+%goldfine+%silverfine+%bronzefine+%copperfine when ^I pronounce a fine upon you of (?:(\d+) platinum[,.]?)?(?:(?: and)? ?(\d+) gold[,.]?)?(?:(?: and)? ?(\d+) silver[,.]?)?(?:(?: and)? ?(\d+) bronze[,.]?)?(?:(?: and)? ?(\d+) copper\.)?
+action instant var fine 0;var platfine 0;var goldfine 0;var silverfine 0;var bronzefine 0;var copperfine 0;if ($1) then evalmath platfine $1*10000;if ($2) then evalmath goldfine $2*1000;if ($3) then evalmath silverfine $3*100;if ($4) then evalmath bronzefine $4*10;if ($5) then var copperfine $5;evalmath fine %platfine+%goldfine+%silverfine+%bronzefine+%copperfine when I pronounce a fine upon you of (?:(\d+) platinum[,.]?)?(?:(?: and)? ?(\d+) gold[,.]?)?(?:(?: and)? ?(\d+) silver[,.]?)?(?:(?: and)? ?(\d+) bronze[,.]?)?(?:(?: and)? ?(\d+) copper\.)?
 action goto DONE when ^You take a moment to reflect on the caper
 var footsteps OFF
 var successful 0
@@ -95,6 +98,7 @@ var worn $BURGLE.WORN
 var travel $BURGLE.TRAVEL
 var maxgrabs $BURGLE.MAXGRABS
 var keep $BURGLE.KEEP
+var hideme $BURGLE.HIDE
 
 if !matchre("%method", "(?i)(RING|ROPE|LOCKPICK)") then
 {
@@ -305,15 +309,20 @@ BURGLE:
 
 SEARCH:
 	if !matchre("%rooms_captured", "%room") then var rooms_captured %rooms_captured|%room
-	if (%grabs = %maxgrabs)||("%footsteps" = "ON") then goto LEAVE
-	if !matchre("%surface", "%searched") then 
+	if (!matchre("%surface", "%searched")) && (%grabs < %maxgrabs) && ("%footsteps" = "OFF") then 
+	{
+		if (("%footsteps" = "OFF") && ($hidden = 0) && ($invisible = 0) && matchre("%hideme", "(?i)(YES|ON|1)") then gosub PUT hide
+		if ("%footsteps" = "OFF") then var searched %searched|%surface
+		if ("%footsteps" = "OFF") then gosub put search %surface
+	}
+	if (!matchre("%surface", "%searched")) && (%grabs < %maxgrabs) && ("%footsteps" = "OFF") then 
 	{
 		math grabs add 1
 		var searched %searched|%surface
-		gosub put search %surface
+		if ("%footsteps" = "OFF") then gosub put search %surface
 	}
-	else var searched %surface
-	gosub STOWLOOT
+	if ("%footsteps" = "ON") then goto LEAVE
+	if ("%footsteps" = "OFF") then gosub STOWLOOT
 	if ("%footsteps" = "OFF")&&(%grabs < %maxgrabs) then goto NEXTSEARCH
 	goto LEAVE
 	
@@ -523,13 +532,13 @@ PAWN_2:
 	 goto DONE_3
 PAWN_IT:
 if (!matchre("%item%n", "$BURGLE.KEEP")) then
-{
-gosub put get %item%n from my %pack
-gosub put sell %item%n
-gosub EMPTYHANDS
-}
-math n add 1
-return
+	{
+		gosub put get %item%n from my %pack
+		gosub put sell %item%n
+		gosub EMPTYHANDS
+	}
+	math n add 1
+	return
 PAWNMOVELOOP:
 	math pawnmoveloop add 1
 	if (%pawnmoveloop = 3) then 
@@ -608,6 +617,7 @@ PUT:
 	pause .1
 	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
     matchre RETURN ^You put|^You sling|^You attach|^You attempt to relax|^You rummage|^What were|^You sell|^You get
+	matchre RETURN ^You slip into a hiding|^You melt into the background|^Eh\?  But you're already hidden\!|^You blend in with your surroundings
 	matchre NOWEAR ^You can\'t wear
 	matchre LEAVE ^You\'re going to need a free hand to rummage around in there\.
 	matchre STORAGEERROR ^But that\'s closed|^That\'s too heavy|too long to fit
