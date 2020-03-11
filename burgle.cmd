@@ -37,7 +37,7 @@
 
 
 
-#debug 5
+debug 5
 
 
 pause 0.2
@@ -326,6 +326,7 @@ SEARCH:
 			math grabs add 1
 			var searched %searched|%surface
 		}
+	}
 	if ("%footsteps" = "ON") then goto LEAVE
 	if ("%footsteps" = "OFF") then gosub STOWLOOT
 	if ("%footsteps" = "OFF")&&(%grabs < %maxgrabs) then goto NEXTSEARCH
