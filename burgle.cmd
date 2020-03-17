@@ -1,6 +1,6 @@
 ## Reveler's Burgle Script
-## v.4.4
-## 03/10/2020
+## v.4.5
+## 03/16/2020
 ## Discord Reveler#6969
 ##
 ## TO USE:  
@@ -13,7 +13,7 @@
 ##		
 ##
 ##		You need to have the latest .travel script if you want to set a burgle location
-##      You need to have Spelltimer plugin for buff checks
+##      		You need to have Spelltimer plugin for buff checks
 ##		DISCLAIMER: NOT RESPONSIBLE FOR YOUR ASTRONOMICAL FINES
 
 ##		V 4.4 updates
@@ -29,15 +29,16 @@
 ## 		Integration of Globals for setting user variables by Azarael
 ##		Logic for pawning and item capture provided by Shroom
 ##		Moved variables to separate file to avoid errors
-##      Robustified matches to avoid errors
-##      Will remain hidden when searching first room to optimize stealth
+##      		Robustified matches to avoid errors
+## 		Will remain hidden when searching first room to optimize stealth
 ##		Added variables for loot - if not using ubercombat pawning you can choose the loot to keep and not pawn
 ##		Disabled cooldown wait
 ##		Added option to hide before search - set variable in variable script
+##		Added option to skip rooms.  Set your variable in variable script
 
 
 
-debug 5
+#debug 5
 
 
 pause 0.2
@@ -106,6 +107,7 @@ var travel $BURGLE.TRAVEL
 var maxgrabs $BURGLE.MAXGRABS
 var keep $BURGLE.KEEP
 var hideme $BURGLE.HIDE
+var skip $BURGLE.SKIP
 
 if !matchre("%method", "(?i)(RING|ROPE|LOCKPICK)") then
 {
@@ -320,7 +322,7 @@ SEARCH:
 	if (!matchre("%surface", "%searched")) && (%grabs < %maxgrabs) && ("%footsteps" = "OFF") then 
 	{
 		if (("%footsteps" = "OFF") && ($hidden = 0) && ($invisible = 0) && matchre("%hideme", "(?i)(YES|ON|1)") then gosub PUT hide
-		if ("%footsteps" = "OFF") then
+		if (("%footsteps" = "OFF") && !matchre("%room", "%skip")) then
 		{
 			gosub put search %surface
 			math grabs add 1
@@ -428,7 +430,8 @@ LEAVE:
 	goto LEAVE
 
 DONE:
-	gosub STOWLOOT
+	if (%successful > 0) then gosub STOWLOOT
+	else gosub EMPTYHANDS
 	echo ###################################
 	echo #####
 	echo #####       FINISHED BURGLING.
@@ -559,6 +562,9 @@ PAWNMOVELOOP:
 ##### UTILITY MODULES
 CONC_REGEN:
 	pause
+     echo ######################
+     echo ##### WAITING FOR CONCENTRATION
+     echo ######################
 	gosub put khri stop
 	pause .1
 	put hide

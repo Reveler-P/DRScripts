@@ -8,15 +8,15 @@
 
 ## THIS IS AN INCLUDED SCRIPT IN THE BURGLE SCRIPT AND MUST BE COMPLETED BEFORE RUNNING .BURGLE.CMD
 
-debug 10
+#debug 10
 
 ## SET YOUR CHARACTER'S NAMES BELOW, IF NOTHING USE NULL
 ## MAKE SURE TO UPDATE EACH CHARACTERS VARIABLES INDIVIDUALLY BELOW
-var CHARACTER1 XXXXXXX
-var CHARACTER2 XXXXXXX
-var CHARACTER3 XXXXXXX
-var CHARACTER4 XXXXXXX
-var CHARACTER5 XXXXXXX
+var CHARACTER1 NULL
+var CHARACTER2 NULL
+var CHARACTER3 NULL
+var CHARACTER4 NULL
+var CHARACTER5 NULL
 var CHARACTER6 NULL
 
 ## SET ALL YOUR CUSTOM VARIABLES PER EACH CHARACTER IN THE BLOCKS BELOW THIS!
@@ -46,6 +46,8 @@ var hideme YES
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
 var donotpawnthis case|manual|scimitar|opener
+# Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
+var skip NULL
 }
 
 if ("$charactername" = "%CHARACTER2") then 
@@ -71,6 +73,8 @@ var hideme NO
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
 var donotpawnthis case|manual
+# Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
+var skip NULL
 }
 
 if ("$charactername" = "%CHARACTER3") then 
@@ -89,13 +93,15 @@ var worn NO
 # Travel location should be the city and the roomid.  Pick a room where you *know* there will not be a guard, or leave NULL NOTE: LEAVE NULL IF USING WITHIN UBERCOMBAT
 var travel NULL
 # maximum times to try to search surfaces
-var maxgrabs 2
+var maxgrabs 7
 # do you want to hide before you search? Will ALWAYS be hidden for first search. ON will attempt to hide before any additional search. WARNING - MAY BE MORE RISKY BECAUSE OF ROUND TIME AND WILL REDUCE NUMBER OF POTENTIAL ROOMS YOU WILL HAVE TIME TO SEARCH
-var hideme YES
+var hideme NO
 # pawn YES will try to pawn your stolen goods NOTE - PUT NO IF PAWNING THROUGH UBERCOMBAT
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
-var donotpawnthis case|manual|pillow|broom|box|cloak|mortar|pestle
+var donotpawnthis NULL
+# Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
+var skip kitchen|bedroom
 }
 
 if ("$charactername" = "%CHARACTER4") then 
@@ -121,6 +127,8 @@ var hideme NO
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
 var donotpawnthis case|manual
+# Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
+var skip NULL
 }
 
 if ("$charactername" = "%CHARACTER5") then 
@@ -146,6 +154,8 @@ var hideme NO
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
 var donotpawnthis case|manual
+# Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
+var skip NULL
 }
 
 if ("$charactername" = "%CHARACTER6") then 
@@ -171,6 +181,8 @@ var hideme NO
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
 var donotpawnthis case|manual
+# Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
+var skip NULL
 }
 ######### END USER VARIABLES DON'T TOUCH ANYTHING ELSE
 
@@ -186,3 +198,4 @@ put #var BURGLE.MAXGRABS %maxgrabs
 put #var BURGLE.PAWN %pawn
 put #var BURGLE.KEEP %donotpawnthis
 put #var BURGLE.HIDE %hideme
+put #var BURGLE.SKIP %skip
