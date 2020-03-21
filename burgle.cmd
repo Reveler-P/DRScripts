@@ -40,7 +40,7 @@
 
 
 
-debug 5
+#debug 5
 
 
 pause 0.2
