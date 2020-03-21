@@ -1,6 +1,6 @@
 ## Reveler's Burgle Script
-## v.4.5
-## 03/16/2020
+## v.4.6
+## 03/20/2020
 ## Discord Reveler#6969
 ##
 ## TO USE:  
@@ -13,10 +13,10 @@
 ##		
 ##
 ##		You need to have the latest .travel script if you want to set a burgle location
-##      		You need to have Spelltimer plugin for buff checks
+##		You need to have Spelltimer plugin for buff checks
 ##		DISCLAIMER: NOT RESPONSIBLE FOR YOUR ASTRONOMICAL FINES
 
-##		V 4.4 updates
+##		V 4.6 updates
 ##		Robustified actions to test for errors
 ##		More guard checks
 ##		More options for worn/stored lockpick rings and ropes
@@ -29,16 +29,18 @@
 ## 		Integration of Globals for setting user variables by Azarael
 ##		Logic for pawning and item capture provided by Shroom
 ##		Moved variables to separate file to avoid errors
-##      		Robustified matches to avoid errors
-## 		Will remain hidden when searching first room to optimize stealth
+##		Robustified matches to avoid errors
+##		Will remain hidden when searching first room to optimize stealth
 ##		Added variables for loot - if not using ubercombat pawning you can choose the loot to keep and not pawn
 ##		Disabled cooldown wait
 ##		Added option to hide before search - set variable in variable script
 ##		Added option to skip rooms.  Set your variable in variable script
+##		Added out when encountering clan justice
 
 
 
-#debug 5
+
+debug 5
 
 
 pause 0.2
@@ -63,6 +65,7 @@ action var surface bookshelf when ^\[Someone Else\'s Home\, Library\]$
 action var room library when Library\]$
 action instant goto JAIL when ^Before you really realize what\'s going on\, your hands are firmly bound behind you and you are marched off\.$
 action goto PLEA when ^The eyes of the court|PLEAD INNOCENT or PLEAD GUILTY|Your silence shall be taken|How do you plead\?
+action goto CLANJUSTICE when ^After a moment the leader steps forward grimly
 action instant var fine 0;var platfine 0;var goldfine 0;var silverfine 0;var bronzefine 0;var copperfine 0;if ($1) then evalmath platfine $1*10000;if ($2) then evalmath goldfine $2*1000;if ($3) then evalmath silverfine $3*100;if ($4) then evalmath bronzefine $4*10;if ($5) then var copperfine $5;evalmath fine %platfine+%goldfine+%silverfine+%bronzefine+%copperfine when I pronounce a fine upon you of (?:(\d+) platinum[,.]?)?(?:(?: and)? ?(\d+) gold[,.]?)?(?:(?: and)? ?(\d+) silver[,.]?)?(?:(?: and)? ?(\d+) bronze[,.]?)?(?:(?: and)? ?(\d+) copper\.)?
 action goto DONE when ^You take a moment to reflect on the caper
 var footsteps OFF
@@ -584,7 +587,7 @@ EMPTYHANDS:
 	if matchre("$righthandnoun|$lefthandnoun", "%ringtype") then gosub put stow %ringtype
 	if !matchre("$righthand", "Empty") then gosub put stow right
 	if !matchre("$lefthand", "Empty") then gosub put stow left
-    pause 0.4
+#    pause 0.4
 	return
 
 STOWLOOT:
@@ -606,7 +609,7 @@ STOWLOOT:
                gosub PUTLOOT put my $lefthandnoun in my %pack
 			   if (!matchre("$righthand", "Empty") && matchre("$lefthandnoun", "%lootpool")) then put empty left
           }
-    pause 0.4
+#    pause 0.4
 	return
      
 ITEM_SET:
@@ -627,7 +630,7 @@ PUT:
 	var put $0
 	PUT_1:
 	var last PUT_1
-	pause .1
+#	pause .1
 	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
     matchre RETURN ^You put|^You sling|^You attach|^You attempt to relax|^You rummage|^What were|^You sell|^You get|not worth anything to me\.\"$
 	matchre RETURN ^You slip into a hiding|^You melt into the background|^Eh\?  But you're already hidden\!|^You blend in with your surroundings
@@ -642,7 +645,7 @@ PUTLOOT:
 	var put $0
 	PUTLOOT_1:
 	var last PUTLOOT_1
-	pause .1
+#	pause .1
 	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
     matchre RETURN ^You put|^You sling|^You attach|^You attempt to relax|^You rummage|^What were|^You sell|^You get
 	matchre NOWEAR ^You can\'t wear
@@ -674,7 +677,7 @@ STORAGEERROR:
 	goto LEAVE
 
 WAIT:
-	pause .01
+#	pause .01
 	goto %last
 	
 NOWEAR:
@@ -720,6 +723,17 @@ TAKEOVER:
 	echo ###################################
 	echo #####
 	echo #####       JAILED - FINE: %fine
+	echo #####
+	echo ###################################
+	put 
+	goto DONE
+	
+CLANJUSTICE:
+	echo ###################################
+	echo #####
+	echo ##### YOU GOT CAUGHT IN CLAN JUSTICE!
+	echo ##### GO HEAL YOURSELF!	
+	echo #####
 	echo #####
 	echo ###################################
 	put 
