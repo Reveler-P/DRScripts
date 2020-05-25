@@ -33,7 +33,7 @@ Begin1:
 
 Redeem:
 	matchre Redeem ^\.\.\.wait|^Sorry\,|^Please wait\.
-	matchre Redeem1 ^You get a Su Helmas contract|^You are already|^You get a handful of Su Helmas contracts|^You get a stack of Su Helmas contracts
+	matchre Redeem1 ^You get .* Su Helmas contract(s?)
 	matchre ALLOUT ^Get what\?|^I could not find what you were referring to\.|^What were you referring to\?
 	put get contract from my %contractcontainer
 	matchwait 5
