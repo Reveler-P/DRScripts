@@ -1,24 +1,27 @@
 ## Reveler's HE Spider Gift Script
-## 12/30/19
-## Version 2.0
-## Adjusted wait time due to early activation to tie to the game output
-## Created variables for your tarantula - update your variable if you've gotten your tarantula altered
+## 05/25/2020 
+## Version 2.1
+##  - Bug fixes and robustification
 ##
-## 11/21/10
+##
+## 12/30/19
+##	- Created variables for your tarantula - update your variable if you've gotten your tarantula altered
+##  - Adjusted wait time due to early activation to tie to the game output
+## 11/21/19
 ##  - Reduced wait time when not enough learning and too early activation
 ##  - Fixed bug where it would lose track of itself if the last skill checked was in the prior skillset activated
 ## 
 ## MUST BE NAMED spider.cmd IN YOUR SCRIPTS FOLDER
 
-#debug 10
+debug 10
 ## NOTE: if you want your pool absorption turned OFF you must do this manually!
 ##################################################
 
 ## Set your chosen minimum learning rate for sacrificing skills
 var LearningRate 33
-if ("$charactername" = "XXXXXXXX") then goto end
+if matchre("$charactername", "(XXXXXXX|XXXXXXX)") then goto end
 
-if ("$charactername" = "XXXXXXXX") then 
+if ("$charactername" = "XXXXXXX") then 
 {
 ##  Set your tarantula noun if you had it altered
 var tarantula tarantula
@@ -34,7 +37,7 @@ var Armor.skillstocheck Defending|Shield_Usage|Light_Armor
 var PoolsToFill Magic|Lore|Survival|Armor
 }
 
-if ("$charactername" = "XXXXXXXX") then 
+if ("$charactername" = "XXXXXXX") then 
 {
 ##  Set your tarantula noun if you had it altered
 var tarantula tarantula
@@ -50,7 +53,7 @@ var Weapons.skillstocheck Melee_Mastery|Missile_Mastery
 var PoolsToFill Magic|Lore|Survival|Armor|Weapons
 }
 
-if ("$charactername" = "XXXXXXXX") then 
+if ("$charactername" = "XXXXXXX") then 
 {
 ##  Set your tarantula noun if you had it altered
 var tarantula tarantula
@@ -66,7 +69,7 @@ var Weapons.skillstocheck Melee_Mastery|Missile_Mastery
 var PoolsToFill Magic|Lore|Survival|Armor|Weapons
 }
 
-if ("$charactername" = "XXXXXXXX") then
+if ("$charactername" = "XXXXXXX") then
 {
 ##  Set your tarantula noun if you had it altered
 var tarantula tarantula
@@ -81,7 +84,7 @@ var Armor.skillstocheck Defending|Shield_Usage|Light_Armor
 ##  Set your pools to fill - Match the skills above
 var PoolsToFill Magic|Lore|Survival|Armor
 }
-if ("$charactername" = "XXXXXXXX") then
+if ("$charactername" = "XXXXXXX") then
 {
 ##  Set your tarantula noun if you had it altered
 var tarantula orbweaver
@@ -96,7 +99,7 @@ var Weapons.skillstocheck Melee_Mastery|Missile_Mastery
 ##  Set your pools to fill - Match the skills above
 var PoolsToFill Magic|Lore|Survival|Armor|Weapons
 }
-if ("$charactername" = "XXXXXXXX") then
+if ("$charactername" = "XXXXXXX") then
 {
 ##  Set your tarantula noun if you had it altered
 var tarantula tarantula
@@ -111,7 +114,7 @@ var Weapons.skillstocheck Melee_Mastery|Missile_Mastery
 ##  Set your pools to fill - Match the skills above
 var PoolsToFill Magic|Lore|Survival|Armor|Weapons
 }
-if ("$charactername" = "XXXXXXXX") then
+if ("$charactername" = "XXXXXXX") then
 {
 ##  Set your tarantula noun if you had it altered
 var tarantula tarantula
@@ -130,8 +133,11 @@ var PoolsToFill Lore|Survival|Armor|Weapons
 ##################################################
 ## Do not change anything below this line
 ## Counters and other variables
+if !def(SpiderLastPool) then put #var SpiderLastPool NULL
 var PoolsToFillCount 0
-action put #var SpiderSacrifice $1;put #var SpiderLastPool $2;put #echo >log cyan Sacrificed $1 for $2 pool when It is mere moments afterward that you feel an itching\, tingling\, and crawling sensation all across the inside of your skull\.  In a mind-wracking flurry of sensation\, you find yourself forgetting your recent progress on (.*)\, but somehow unbidden knowledge into other (.*) tasks are mapped into your psyche\.$
+action put #var SpiderSacrifice $1;put #var SpiderLastPool $2;put #echo >log cyan Tarantula: Sacrificed $1 for $2 pool when It is mere moments afterward that you feel an itching\, tingling\, and crawling sensation all across the inside of your skull\.  In a mind-wracking flurry of sensation\, you find yourself forgetting your recent progress on (.*)\, but somehow unbidden knowledge into other (.*) tasks are mapped into your psyche\.$
+
+
 
 eval TotalPools count("%PoolsToFill", "|")
 
@@ -161,19 +167,17 @@ getskill:
 var skillcounter 0
 var sacrifice NULL
 var Checked 0
+var checkPools %PoolsToFill
 var beginningPool %PoolsToFillCount
+eval checkPools replacere("%checkPools", "$SpiderLastPool", "")
+eval checkPools replacere("%checkPools", "\|+", "|")
+eval checkPools replacere("%checkPools", "^\|", "")
+eval checkPools replacere("%checkPools", "\|$", "")
 getskill_1:
 var temppool %PoolsToFill(%PoolsToFillCount)
 if (%Checked >= %TotalPools) then goto noskills
-if ("%temppool" = "$SpiderLastPool") then
-{
-    math PoolsToFillCount add 1
-    math Checked add 1
-	if (%Checked > %TotalPools) then goto noskills
-    goto getskill_1
-}
-var tempskill %%PoolsToFill(%PoolsToFillCount).skillstocheck(%skillcounter)
-var tempnumberskills %Total.%PoolsToFill(%PoolsToFillCount)
+var tempskill %%checkPools(%PoolsToFillCount).skillstocheck(%skillcounter)
+var tempnumberskills %Total.%checkPools(%PoolsToFillCount)
 if (($%tempskill.LearningRate >= %LearningRate) then
 {
     var sacrifice %tempskill
@@ -203,31 +207,32 @@ if (($%tempskill.LearningRate < %LearningRate) && ("%sacrifice" = "NULL")) then
     }
 }
 getskill_2:
-eval sacrifice replacere("%%PoolsToFill(%PoolsToFillCount).skillstocheck(%skillcounter)", "_", " ")
+eval sacrifice replacere("%%checkPools(%PoolsToFillCount).skillstocheck(%skillcounter)", "_", " ")
 goto activatespider
  
 activatespider:
-{
     put #script pause all except spider
     pause .1
     activatespider_1:
-    send turn my %tarantula to %sacrifice
     matchre activatespider_1 ^\.\.\.wait|^Sorry\,|^Please wait\.
     matchre activatespider_1 ^You don't seem to be able to move to do that
     matchre activatespider_1 ^You can't do that while entangled in a web
     matchre activatespider_1 ^You are still stunned
+	matchre lastskillseterror ^However\, your changes fail to lock into place\.|^\[You need to vary which skillset you select with every use\.
+	matchre badskill ^What skill did you want to attune
 	matchre activatespider_2 ^You fiddle with the tiny levers and dials
+    put turn my %tarantula to %sacrifice
     matchwait 5
     activatespider_2:
-    send rub my %tarantula
+    matchre lastskillseterror ^\[You need to vary which skillset you select with every use\.
+    matchre lastskillseterror ^You try\, but it does nothing.
     matchre activatespider_2 ^\.\.\.wait|^Sorry\,|^Please wait\.
     matchre activatespider_2 ^You don't seem to be able to move to do that
     matchre activatespider_2 ^You can't do that while entangled in a web
     matchre activatespider_2 ^You are still stunned
     matchre resume It is mere moments afterward that you feel an itching
-    matchre lastskillseterror ^You try\, but it does nothing.
     matchre tooearly ^You try\, but the (.+) is unresponsive\.  It needs approximately ([0-9]) roisaen to generate enough venom again.
-
+    put rub my %tarantula
     matchwait 5
     pause .1
     resume:
@@ -235,15 +240,23 @@ activatespider:
     math PoolsToFillCount add 1
     if  (%PoolsToFillCount > %TotalPools) then var PoolsToFillCount 0
     goto spidertimer
+
+badskill:
+put #var SpiderLastPool NULL
+put #script resume all
+pause .1
+put %lastaction
+goto getskill
  
 lastskillseterror:
-put #var SpiderLastPool %PoolsToFill(%PoolsToFillCount)
+put #var SpiderLastPool %checkPools(%PoolsToFillCount)
 put #script resume all
+pause .1
 put %lastaction
 goto getskill
  
 noskills:
-put #echo >log cyan No skills with enough learning - checking in 3 minutes
+put #echo >log cyan Tarantula: No skills with enough learning - checking in 3 minutes
 var PoolsToFillCount %beginningPool
 var Checked 0
 pause 180
@@ -258,8 +271,8 @@ if (%minutes = 0) then
 	var wait 60
 	var minutes 1
 }
-else evalmath wait $2 * 65
-put #echo >log cyan Spider activated too early - trying again in about %minutes minutes
+else evalmath wait %minutes * 65
+put #echo >log cyan Tarantula: Activated too early - trying again in about %minutes minutes
 put #script resume all
 put %lastaction
 pause %wait
