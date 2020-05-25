@@ -30,11 +30,11 @@ var tarantula tarantula
 var Magic.skillstocheck Inner_Fire|Augmentation|Arcana
 var Lore.skillstocheck Appraisal|Tactics
 var Survival.skillstocheck Perception|Skinning
-var Armor.skillstocheck Defending|Shield_Usage|Light_Armor
+var Armors.skillstocheck Defending|Shield_Usage|Light_Armor
 #var Weapons.skillstocheck Melee_Mastery|Missile_Mastery
 
 ##  Set your pools to fill - Match the skills above
-var PoolsToFill Magic|Lore|Survival|Armor
+var PoolsToFill Magic|Lore|Survival|Armors
 }
 
 if ("$charactername" = "XXXXXXX") then 
@@ -46,11 +46,11 @@ var tarantula tarantula
 var Magic.skillstocheck Primary_Magic|Arcana
 var Lore.skillstocheck Appraisal|Tactics
 var Survival.skillstocheck Perception|Skinning|Outdoorsmanship
-var Armor.skillstocheck Defending|Shield_Usage|Light_Armor
+var Armors.skillstocheck Defending|Shield_Usage|Light_Armors
 var Weapons.skillstocheck Melee_Mastery|Missile_Mastery
 
 ##  Set your pools to fill - Match the skills above
-var PoolsToFill Magic|Lore|Survival|Armor|Weapons
+var PoolsToFill Magic|Lore|Survival|Armors|Weapons
 }
 
 if ("$charactername" = "XXXXXXX") then 
@@ -62,11 +62,11 @@ var tarantula tarantula
 var Magic.skillstocheck Primary_Magic|Arcana
 var Lore.skillstocheck Appraisal|Tactics
 var Survival.skillstocheck Perception|Skinning|Outdoorsmanship
-var Armor.skillstocheck Defending|Shield_Usage|Light_Armor
+var Armors.skillstocheck Defending|Shield_Usage|Light_Armor
 var Weapons.skillstocheck Melee_Mastery|Missile_Mastery
 
 ##  Set your pools to fill - Match the skills above
-var PoolsToFill Magic|Lore|Survival|Armor|Weapons
+var PoolsToFill Magic|Lore|Survival|Armors|Weapons
 }
 
 if ("$charactername" = "XXXXXXX") then
@@ -78,11 +78,11 @@ var tarantula tarantula
 var Magic.skillstocheck Inner_Fire|Augmentation|Arcana
 var Lore.skillstocheck Appraisal|Tactics
 var Survival.skillstocheck Perception|Skinning
-var Armor.skillstocheck Defending|Shield_Usage|Light_Armor
+var Armors.skillstocheck Defending|Shield_Usage|Light_Armor
 #var Weapons.skillstocheck Melee_Mastery|Missile_Mastery
 
 ##  Set your pools to fill - Match the skills above
-var PoolsToFill Magic|Lore|Survival|Armor
+var PoolsToFill Magic|Lore|Survival|Armors
 }
 if ("$charactername" = "XXXXXXX") then
 {
@@ -93,11 +93,11 @@ var tarantula orbweaver
 var Magic.skillstocheck Primary_Magic|Augmentation
 var Lore.skillstocheck Appraisal|Tactics
 var Survival.skillstocheck Perception|Skinning
-var Armor.skillstocheck Defending|Shield_Usage|Light_Armor
+var Armors.skillstocheck Defending|Shield_Usage|Light_Armor
 var Weapons.skillstocheck Melee_Mastery|Missile_Mastery
 
 ##  Set your pools to fill - Match the skills above
-var PoolsToFill Magic|Lore|Survival|Armor|Weapons
+var PoolsToFill Magic|Lore|Survival|Armors|Weapons
 }
 if ("$charactername" = "XXXXXXX") then
 {
@@ -108,11 +108,11 @@ var tarantula tarantula
 var Magic.skillstocheck Primary_Magic|Augmentation
 var Lore.skillstocheck Appraisal|Tactics
 var Survival.skillstocheck Perception|Skinning
-var Armor.skillstocheck Defending|Shield_Usage|Light_Armor
+var Armors.skillstocheck Defending|Shield_Usage|Light_Armor
 var Weapons.skillstocheck Melee_Mastery|Missile_Mastery
 
 ##  Set your pools to fill - Match the skills above
-var PoolsToFill Magic|Lore|Survival|Armor|Weapons
+var PoolsToFill Magic|Lore|Survival|Armors|Weapons
 }
 if ("$charactername" = "XXXXXXX") then
 {
@@ -123,11 +123,11 @@ var tarantula tarantula
 #var Magic.skillstocheck Primary_Magic|Augmentation
 var Lore.skillstocheck Appraisal|Tactics
 var Survival.skillstocheck Perception|Skinning
-var Armor.skillstocheck Defending|Shield_Usage|Light_Armor
+var Armors.skillstocheck Defending|Shield_Usage|Light_Armor
 var Weapons.skillstocheck Melee_Mastery|Missile_Mastery
 
 ##  Set your pools to fill - Match the skills above
-var PoolsToFill Lore|Survival|Armor|Weapons
+var PoolsToFill Lore|Survival|Armors|Weapons
 }
 
 ##################################################
@@ -173,9 +173,10 @@ eval checkPools replacere("%checkPools", "$SpiderLastPool", "")
 eval checkPools replacere("%checkPools", "\|+", "|")
 eval checkPools replacere("%checkPools", "^\|", "")
 eval checkPools replacere("%checkPools", "\|$", "")
+eval TotalPoolstoCheck count("%checkPools", "|")
 getskill_1:
-var temppool %PoolsToFill(%PoolsToFillCount)
-if (%Checked >= %TotalPools) then goto noskills
+var temppool %checkPools(%PoolsToFillCount)
+if (%Checked > %TotalPoolstoCheck) then goto noskills
 var tempskill %%checkPools(%PoolsToFillCount).skillstocheck(%skillcounter)
 var tempnumberskills %Total.%checkPools(%PoolsToFillCount)
 if (($%tempskill.LearningRate >= %LearningRate) then
@@ -185,12 +186,12 @@ if (($%tempskill.LearningRate >= %LearningRate) then
 }
 if (($%tempskill.LearningRate < %LearningRate) && ("%sacrifice" = "NULL")) then
 {
-    if (%PoolsToFillCount < %TotalPools) && (%skillcounter >= %tempnumberskills) then
+    if (%PoolsToFillCount < %TotalPoolstoCheck) && (%skillcounter >= %tempnumberskills) then
     {
         var skillcounter 0
         math PoolsToFillCount add 1
         math Checked add 1
-        if ((%PoolsToFillCount > %TotalPools)&&(%TotalPools >= %Checked)) then var PoolsToFillCount 0
+        if ((%PoolsToFillCount > %TotalPoolstoCheck)&&(%TotalPoolstoCheck >= %Checked)) then var PoolsToFillCount 0
         goto getskill_1
     }
     if (%skillcounter < %tempnumberskills) then
@@ -198,11 +199,11 @@ if (($%tempskill.LearningRate < %LearningRate) && ("%sacrifice" = "NULL")) then
         math skillcounter add 1
         goto getskill_1
     }
-    if (%PoolsToFillCount >= %TotalPools) then
+    if (%PoolsToFillCount >= %TotalPoolstoCheck) then
     {
         var skillcounter 0
 		var PoolsToFillCount 0
-		if (%Checked >= %TotalPools) then goto noskills
+		if (%Checked >= %TotalPoolstoCheck) then goto noskills
 		goto getskill_1
     }
 }
@@ -238,7 +239,7 @@ activatespider:
     resume:
     put #script resume all
     math PoolsToFillCount add 1
-    if  (%PoolsToFillCount > %TotalPools) then var PoolsToFillCount 0
+    if  (%PoolsToFillCount > %TotalPoolstoCheck) then var PoolsToFillCount 0
     goto spidertimer
 
 badskill:
