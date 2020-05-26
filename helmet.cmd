@@ -5,21 +5,22 @@
 
 #debug 10
 ### SET YOUR TRASH HERE - CAREFUL WITH MATCHES - if you don't want to match "oilcan" make sure your "oil" has \b at the end!  Do not leave empty - if keeping everything set to NULL
-var SHtrash oil\b|oilcan
+var SHtrash NULL
 var lootcontainer shadow
 var contractcontainer backpack
 var weapon stiletto
 
 action var action search when tickle at the frayed edges of sanity
 action var action move darkness when stir within it may have other things in mind
-action var action smite when The seed might well be the only thing in the world right now, as you slowly threaten to
+if matchre("$guild", "Empath") then action var action touch seed when The seed might well be the only thing in the world right now, as you slowly threaten to
+else action var action smite when The seed might well be the only thing in the world right now, as you slowly threaten to
 action var action meditate when but it's certainly enough to make someone scream\, too
 action var action climb when granite slab at the center of the sunken pit
 action var action dodge when past the vines you see a lit chamber beckoning
 action var action crawl when little sense moving forward until this is dealt with
 if matchre("$guild", "(Commoner|Barbarian|Thief)") then action var action break when magical barrier blocks further travel down the cold passageway
 if matchre("$guild", "(Bard|Cleric|Empath|Moon Mage|Necromancer|Paladin|Ranger|Trader|Warrior Mage)") then action var action invoke when magical barrier blocks further travel down the cold passageway
-action put #echo >log Blue Su Helmet Loot: $2 when guide shoves (a|some) (.*) into
+action put #echo >log Blue Su Helmet Loot: $2 when guide shoves (a(n?) |some) (.*) into
 
 Begin:
 	if !matchre("$roomobjs", "empath") then goto WRONGROOM
