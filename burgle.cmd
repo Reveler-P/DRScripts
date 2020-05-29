@@ -1,6 +1,6 @@
 ## Reveler's Burgle Script
-## v.4.6
-## 03/20/2020
+## v.4.7
+## 05/28/2020
 ## Discord Reveler#6969
 ##
 ## TO USE:  
@@ -16,7 +16,7 @@
 ##		You need to have Spelltimer plugin for buff checks
 ##		DISCLAIMER: NOT RESPONSIBLE FOR YOUR ASTRONOMICAL FINES
 
-##		V 4.6 updates
+##		V 4.7 updates
 ##		Robustified actions to test for errors
 ##		More guard checks
 ##		More options for worn/stored lockpick rings and ropes
@@ -36,11 +36,12 @@
 ##		Added option to hide before search - set variable in variable script
 ##		Added option to skip rooms.  Set your variable in variable script
 ##		Added out when encountering clan justice
+##		Added option to start burgle from inside the house as a failsafe - will search and get you out when it hears footsteps
 
 
 
 
-#debug 5
+debug 5
 
 
 pause 0.2
@@ -67,7 +68,10 @@ action instant goto JAIL when ^Before you really realize what\'s going on\, your
 action goto PLEA when ^The eyes of the court|PLEAD INNOCENT or PLEAD GUILTY|Your silence shall be taken|How do you plead\?
 action goto CLANJUSTICE when ^After a moment the leader steps forward grimly
 action instant var fine 0;var platfine 0;var goldfine 0;var silverfine 0;var bronzefine 0;var copperfine 0;if ($1) then evalmath platfine $1*10000;if ($2) then evalmath goldfine $2*1000;if ($3) then evalmath silverfine $3*100;if ($4) then evalmath bronzefine $4*10;if ($5) then var copperfine $5;evalmath fine %platfine+%goldfine+%silverfine+%bronzefine+%copperfine when I pronounce a fine upon you of (?:(\d+) platinum[,.]?)?(?:(?: and)? ?(\d+) gold[,.]?)?(?:(?: and)? ?(\d+) silver[,.]?)?(?:(?: and)? ?(\d+) bronze[,.]?)?(?:(?: and)? ?(\d+) copper\.)?
-action goto DONE when ^You take a moment to reflect on the caper
+#action goto DONE when ^You take a moment to reflect on the caper
+action put #var test.burgle.start $gametime;put #echo >log red Burgle start: $gametime;put #log >Burgle.log Start,$charactername,$gametime when ^You make short work of the lock on the window and slip inside|^You scale up the side of a wall, quickly slipping inside
+action evalmath test.burgle.warning $gametime - $test.burgle.start;put #var test.burgle.warning %test.burgle.warning;put #echo >log red Burgle warning: $gametime ($test.burgle.warning from entry);put #log >Burgle.log Footsteps,$charactername,$gametime,$test.burgle.warning when ^Footsteps nearby make you wonder if you're pushing your luck
+action evalmath test.burgle.caught $gametime - $test.burgle.warning;put #var test.burgle.caught %test.burgle.caught;put #echo >log red Caught burgling: $gametime ($test.burgle.caught from warning);put #log >Burgle.log Caught,$charactername,$gametime,$test.burgle.caught when ^Before you really realize what\'s going on\, your hands are firmly bound behind you|^After a moment the leader steps forward 
 var footsteps OFF
 var successful 0
 var grabs 0
@@ -119,7 +123,7 @@ goto end
 }
 
 
-
+if matchre("$roomname", "Someone Else\'s Home") then goto ESCAPE
 
 CHECKTIMER:
 	var last CHECKTIMER
@@ -310,6 +314,7 @@ HIDE:
 BURGLE:
 	var last BURGLE
 	if matchre("$roomobjs","(%guards)") then goto GUARDABORT
+	matchre NOLOCKPICK ^And how were you planning to get in\?
 	matchre NOBURGLE ^You don't see any likely marks in the area\.
 	matchre SEARCH ^\[Someone Else\'s Home\,
 	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
@@ -317,7 +322,7 @@ BURGLE:
 #	matchre SEARCH ^You scale up the side of a wall
 	if (($hidden = 1) || ($invisible = 1)) then put burgle
 	else goto HIDEPREP
-	matchwait 5
+	matchwait 10
 	gosub ERROR ENTERING HOME
 
 SEARCH:
@@ -339,9 +344,14 @@ SEARCH:
 	
 NEXTSEARCH:
 	var priorgrab %moves
-	var roomexits 0
 	if ("%footsteps" = "ON") then goto LEAVE
 	math moves add 1
+    gosub GETDIRECTION
+	gosub MOVEROOMS %direction(%moves)
+	goto SEARCH
+
+GETDIRECTION:
+	var roomexits 0
 	if (($north = 1) && ("%reverse(%priorgrab)" != "north") && !matchre("%priorexit(%room)","north")) then
 	{
 		var direction(%moves) north
@@ -404,9 +414,8 @@ NEXTSEARCH:
 		var reverse(%moves) %direction(%priorgrab)
 		var priorexit(%room) %reverse(%priorgrab)|%priorexit(%room)
 	} 
-	gosub MOVEROOMS %direction(%moves)
-	goto SEARCH
-	
+	return
+
 MOVEROOMS:
 	var movement $0
 	MOVEROOMS1:
@@ -416,7 +425,6 @@ MOVEROOMS:
 	matchre WAIT \.\.\.wait
 	put %movement
 	matchwait 5
-	
 	
 LEAVE:
 	var last leave
@@ -431,6 +439,35 @@ LEAVE:
 	gosub moverooms %reverse(%moves)
 	math moves subtract 1
 	goto LEAVE
+
+ESCAPE:
+	var last escape
+	if matchre("$roomname", "Kitchen") then 
+	{
+	matchre ESCAPED ^You take a moment to reflect on the caper you just pulled as you slip out the kitchen window\.\.\.
+	matchre ERROR ^What were you referring to\? 
+	matchre WAIT \.\.\.wait
+	put go window
+	matchwait 3
+	}
+	gosub GETDIRECTION
+	gosub MOVEROOMS %direction(%moves)
+	math moves add 1
+	goto ESCAPE	
+
+ESCAPED:
+	gosub EMPTYHANDS
+	echo ###################################
+	echo #####
+	echo #####       FINISHED BURGLING.
+	echo #####		SUCCESSFULLY ESCAPED.
+	echo #####       Thievery: $Thievery.LearningRate/34
+	echo #####       Stealth: $Stealth.LearningRate/34
+	if matchre("%method", "(?i)ROPE") then echo #####       Athletics: $Athletics.LearningRate/34
+	if matchre("%method", "(?i)(LOCKPICK|RING)") then echo #####       Locksmithing: $Locksmithing.LearningRate/34
+	echo #####
+	echo ###################################
+	goto END
 
 DONE:
 	if (%successful > 0) then gosub STOWLOOT
@@ -725,7 +762,7 @@ TAKEOVER:
 	echo #####       JAILED - FINE: %fine
 	echo #####
 	echo ###################################
-	put 
+	put #echo >log red Jailed when burgling!
 	goto DONE
 	
 CLANJUSTICE:
@@ -736,7 +773,7 @@ CLANJUSTICE:
 	echo #####
 	echo #####
 	echo ###################################
-	put 
+	put #echo >log red Caught in clan justice!
 	goto DONE
 	
 RETURN:
@@ -751,6 +788,7 @@ NOBURGLE:
 	echo #####
 	echo #####
 	echo ###################################
+	put #echo >log red Burgle: Not a valid place to burgle
 	goto END
 
 NORING:
@@ -760,16 +798,17 @@ NORING:
 	echo #####
 	echo #####
 	echo ###################################
+	put #echo >log red Burgle: Missing lockpick ring?
 	goto END
 
 NOLOCKPICK:
-NORING:
 	echo ###################################
 	echo #####
 	echo #####       No Lockpick?
 	echo #####
 	echo #####
 	echo ###################################
+	put #echo >log red Burgle: Missing lockpick?
 	goto END
 
 NOROPE:
@@ -779,6 +818,7 @@ NOROPE:
 	echo #####
 	echo #####
 	echo ###################################
+	put #echo >log red Burgle: Missing climbing rope?
 	goto END
 
 NOHIDE:
@@ -789,6 +829,7 @@ NOHIDE:
 	echo #####
 	echo #####
 	echo ###################################
+	put #echo >log red Burgle: Error with hiding?
 	goto END
 
 GUARDABORT:
@@ -799,6 +840,7 @@ GUARDABORT:
 	echo #####
 	echo #####
 	echo ###################################
+	put #echo >log red Burgle: Did not burgle - guard alert!
 	goto END
 
 NOTYET:
@@ -809,6 +851,7 @@ NOTYET:
 	echo #####
 	echo #####
 	echo ###################################
+	put #echo >log red Burgle: $1 minute cooldown left
 #	waitfor A tingling on the back of your neck draws attention
 #	goto CHECKTIMER
 	goto END
@@ -819,6 +862,7 @@ ERROR:
 	echo #####       UNKNOWN ERROR WITH $0
 	echo #####
 	echo ###################################
+	put #echo >log red Burgle: Unknown error
 	goto END
 
 END:

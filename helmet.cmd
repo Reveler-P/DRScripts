@@ -1,13 +1,18 @@
 #  Reveler's Su Helmas Script
 #  For the quick run
 #  Start standing in front of the empath
-
+#  
+#  Edits by Zmaj
+#  Added support for a staff container, loot container being full, and 
+#  resolved issues with getting stuck in smite and touch loops
+#   
 
 #debug 10
 ### SET YOUR TRASH HERE - CAREFUL WITH MATCHES - if you don't want to match "oilcan" make sure your "oil" has \b at the end!  Do not leave empty - if keeping everything set to NULL
 var SHtrash NULL
 var lootcontainer shadow
 var contractcontainer backpack
+var staffcontainer toolbelt
 var weapon stiletto
 
 action var action search when tickle at the frayed edges of sanity
@@ -59,6 +64,8 @@ PuzzleRun:
 	matchwait 3
 	
 Looper:
+	matchre Looting Touch what?
+	matchre Looting ^You lash out at everything around you
 	matchre Looper ^\.\.\.wait|^Sorry\,|^Please wait\.
 	matchre Move ^You hesitate at the edge of the light
 	matchre Looper ^\[Beneath Su Helmas\]
@@ -78,8 +85,10 @@ Move:
 Looting:
 	pause .5
 	if matchre("$lefthandnoun", "(%SHtrash)") then put empty left
+	if ("$lefthandnoun" = "staff") then put put $lefthandnoun in my %staffcontainer	
 	if !matchre("$lefthandnoun", "(%SHtrash)") then put put $lefthandnoun in my %lootcontainer
 	pause 3
+	if ("$lefthandnoun" != "") then goto Space
 	goto Redeem
 
 
@@ -109,5 +118,13 @@ echo ##############################
 echo ##############################
 goto end
 
+Space:
+
+echo ##############################
+echo ##############################
+echo #### Container may be out of space!
+echo ##############################
+echo ##############################
+goto end
 
 end:
