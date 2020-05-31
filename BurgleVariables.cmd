@@ -11,6 +11,12 @@
 
 #debug 10
 
+#Preliminary variables - don't touch
+var skip NULL
+var donotpawnthis NULL
+var trashit NO
+### Edit below here
+
 ## SET YOUR CHARACTER'S NAMES BELOW, IF NOTHING USE NULL
 ## MAKE SURE TO UPDATE EACH CHARACTERS VARIABLES INDIVIDUALLY BELOW
 var CHARACTER1 NULL
