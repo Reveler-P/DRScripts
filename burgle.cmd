@@ -72,6 +72,7 @@ action instant var fine 0;var platfine 0;var goldfine 0;var silverfine 0;var bro
 action put #var test.burgle.start $gametime;put #echo >log red Burgle start: $gametime;put #log >Burgle.log Start,$charactername,$gametime when ^You make short work of the lock on the window and slip inside|^You scale up the side of a wall, quickly slipping inside
 action evalmath test.burgle.warning $gametime - $test.burgle.start;put #var test.burgle.warning %test.burgle.warning;put #echo >log red Burgle warning: $gametime ($test.burgle.warning from entry);put #log >Burgle.log Footsteps,$charactername,$gametime,$test.burgle.warning when ^Footsteps nearby make you wonder if you're pushing your luck
 action evalmath test.burgle.caught $gametime - $test.burgle.warning;put #var test.burgle.caught %test.burgle.caught;put #echo >log red Caught burgling: $gametime ($test.burgle.caught from warning);put #log >Burgle.log Caught,$charactername,$gametime,$test.burgle.caught when ^Before you really realize what\'s going on\, your hands are firmly bound behind you|^After a moment the leader steps forward 
+var done NOPE
 var footsteps OFF
 var successful 0
 var grabs 0
@@ -472,6 +473,7 @@ ESCAPED:
 	goto END
 
 DONE:
+	var done YES
 	if (%successful > 0) then gosub STOWLOOT
 	else gosub EMPTYHANDS
 	echo ###################################
@@ -697,7 +699,8 @@ PUTLOOT:
 
 NOFIT:
 	echo Could not fit %put! Get a bigger bag.
-	goto LEAVE
+	if ("%done" = "NOPE") then goto LEAVE
+	else goto RETURN
 
 STAND:
      matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
