@@ -1,6 +1,6 @@
 ## Reveler's Burgle Script
-## v.4.7
-## 05/28/2020
+## v.4.7.1
+## 05/30/2020
 ## Discord Reveler#6969
 ##
 ## TO USE:  
@@ -36,12 +36,12 @@
 ##		Added option to hide before search - set variable in variable script
 ##		Added option to skip rooms.  Set your variable in variable script
 ##		Added out when encountering clan justice
-##		Added option to start burgle from inside the house as a failsafe - will search and get you out when it hears footsteps
+##		Added option to start burgle from inside the house as a failsafe - will immediately exit
 
 
 
 
-debug 5
+#debug 10
 
 
 pause 0.2
@@ -113,12 +113,14 @@ var worn $BURGLE.WORN
 var travel $BURGLE.TRAVEL
 var maxgrabs $BURGLE.MAXGRABS
 var keep $BURGLE.KEEP
+var trash $BURGLE.TRASH
 var hideme $BURGLE.HIDE
 var skip $BURGLE.SKIP
 
 if !matchre("%method", "(?i)(RING|ROPE|LOCKPICK)") then
 {
 echo ERROR WITH VARIABLE FOR BNE METHOD
+put #echo >log red BURGLE: Error with variables
 goto end
 }
 
@@ -327,10 +329,10 @@ BURGLE:
 
 SEARCH:
 	if !matchre("%rooms_captured", "%room") then var rooms_captured %rooms_captured|%room
-	if (!matchre("%surface", "%searched")) && (%grabs < %maxgrabs) && ("%footsteps" = "OFF") then 
+	if (!matchre("%surface", "%searched")) && (%grabs < %maxgrabs) && ("%footsteps" = "OFF") && !matchre("%room", "%skip") then 
 	{
-		if (("%footsteps" = "OFF") && ($hidden = 0) && ($invisible = 0) && matchre("%hideme", "(?i)(YES|ON|1)") then gosub PUT hide
-		if (("%footsteps" = "OFF") && !matchre("%room", "%skip")) then
+		if (("%footsteps" = "OFF") && ($hidden = 0) && ($invisible = 0) && matchre("%hideme", "(?i)(YES|ON|1)")) then gosub PUT hide
+		if ("%footsteps" = "OFF") then
 		{
 			gosub put search %surface
 			math grabs add 1
@@ -636,15 +638,17 @@ STOWLOOT:
 	if !matchre("$righthand", "Empty") then 
           {
                if matchre("$righthandnoun", "%lootpool") then gosub ITEM_SET $righthand
-			   gosub PUTLOOT put my $righthandnoun in my %pack
-			   if (!matchre("$righthand", "Empty") && matchre("$righthandnoun", "%lootpool")) then put empty right
+			   if !matchre("$righthandnoun", "%keep") && matchre("%trash", "(?i)(YES|ON)") then put empty right
+			   else gosub PUTLOOT put my $righthandnoun in my %pack
+#			   if (!matchre("$righthand", "Empty") && matchre("$righthandnoun", "%lootpool")) then put empty right
 			   
           }
 	if !matchre("$lefthand", "Empty") then 
           {
                if matchre("$lefthandnoun", "%lootpool") then gosub ITEM_SET $lefthand
-               gosub PUTLOOT put my $lefthandnoun in my %pack
-			   if (!matchre("$righthand", "Empty") && matchre("$lefthandnoun", "%lootpool")) then put empty left
+			   if !matchre("$lefthandnoun", "%keep") && matchre("%trash", "(?i)(YES|ON)") then put empty left
+               else gosub PUTLOOT put my $lefthandnoun in my %pack
+#			   if (!matchre("$righthand", "Empty") && matchre("$lefthandnoun", "%lootpool")) then put empty left
           }
 #    pause 0.4
 	return
@@ -686,10 +690,14 @@ PUTLOOT:
 	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
     matchre RETURN ^You put|^You sling|^You attach|^You attempt to relax|^You rummage|^What were|^You sell|^You get
 	matchre NOWEAR ^You can\'t wear
-	matchre RETURN ^But that\'s closed|^That\'s too heavy|too long to fit
+	matchre NOFIT ^But that\'s closed|^That\'s too heavy|too long to fit
 	put %put
 	matchwait 5
 	return
+
+NOFIT:
+	echo Could not fit %put! Get a bigger bag.
+	goto LEAVE
 
 STAND:
      matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
