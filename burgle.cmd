@@ -1,6 +1,6 @@
 ## Reveler's Burgle Script
 ## v.4.7.1
-## 05/30/2020
+## 06/01/2020
 ## Discord Reveler#6969
 ##
 ## TO USE:  
