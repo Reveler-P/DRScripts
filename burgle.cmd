@@ -41,7 +41,7 @@
 
 
 
-#debug 10
+debug 10
 
 
 pause 0.2
@@ -640,7 +640,7 @@ STOWLOOT:
 	if !matchre("$righthand", "Empty") then 
           {
                if matchre("$righthandnoun", "%lootpool") then gosub ITEM_SET $righthand
-			   if !matchre("$righthandnoun", "%keep") && matchre("%trash", "(?i)(YES|ON)") then put empty right
+			   if !matchre("$righthandnoun", "(%keep|rope|lockpick|ring)") && matchre("%trash", "(?i)(YES|ON)") then put empty right
 			   else gosub PUTLOOT put my $righthandnoun in my %pack
 #			   if (!matchre("$righthand", "Empty") && matchre("$righthandnoun", "%lootpool")) then put empty right
 			   
@@ -648,7 +648,7 @@ STOWLOOT:
 	if !matchre("$lefthand", "Empty") then 
           {
                if matchre("$lefthandnoun", "%lootpool") then gosub ITEM_SET $lefthand
-			   if !matchre("$lefthandnoun", "%keep") && matchre("%trash", "(?i)(YES|ON)") then put empty left
+			   if !matchre("$lefthandnoun", "(%keep|rope|lockpick|ring)") && matchre("%trash", "(?i)(YES|ON)") then put empty left
                else gosub PUTLOOT put my $lefthandnoun in my %pack
 #			   if (!matchre("$righthand", "Empty") && matchre("$lefthandnoun", "%lootpool")) then put empty left
           }
@@ -676,10 +676,11 @@ PUT:
 #	pause .1
 	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
     matchre RETURN ^You put|^You sling|^You attach|^You attempt to relax|^You rummage|^What were|^You sell|^You get|not worth anything to me\.\"$
+#" added for formatting
 	matchre RETURN ^You slip into a hiding|^You melt into the background|^Eh\?  But you're already hidden\!|^You blend in with your surroundings
 	matchre NOWEAR ^You can\'t wear
 	matchre LEAVE ^You\'re going to need a free hand to rummage around in there\.
-	matchre STORAGEERROR ^But that\'s closed|^That\'s too heavy|too long to fit
+	matchre STORAGEERROR ^But that\'s closed|^That\'s too heavy|too long to fit|too long\, even after stuffing it\, to fit
 	put %put
 	matchwait 5
 	return
@@ -692,13 +693,14 @@ PUTLOOT:
 	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
     matchre RETURN ^You put|^You sling|^You attach|^You attempt to relax|^You rummage|^What were|^You sell|^You get
 	matchre NOWEAR ^You can\'t wear
-	matchre NOFIT ^But that\'s closed|^That\'s too heavy|too long to fit
+	matchre NOFIT ^But that\'s closed|^That\'s too heavy|too long to fit|too long\, even after stuffing it\, to fit
 	put %put
 	matchwait 5
 	return
 
 NOFIT:
-	echo Could not fit %put! Get a bigger bag.
+	echo Could not fit looted item! Get a bigger bag.
+	if !matchre("%thing","$BURGLE_KEEP") then put drop %thing
 	if ("%done" = "NOPE") then goto LEAVE
 	else goto RETURN
 
