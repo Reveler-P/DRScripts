@@ -1,6 +1,6 @@
 ## Reveler's Burgle Script
 ## v.4.7.1
-## 06/01/2020
+## 05/30/2020
 ## Discord Reveler#6969
 ##
 ## TO USE:  
@@ -70,8 +70,8 @@ action goto CLANJUSTICE when ^After a moment the leader steps forward grimly
 action instant var fine 0;var platfine 0;var goldfine 0;var silverfine 0;var bronzefine 0;var copperfine 0;if ($1) then evalmath platfine $1*10000;if ($2) then evalmath goldfine $2*1000;if ($3) then evalmath silverfine $3*100;if ($4) then evalmath bronzefine $4*10;if ($5) then var copperfine $5;evalmath fine %platfine+%goldfine+%silverfine+%bronzefine+%copperfine when I pronounce a fine upon you of (?:(\d+) platinum[,.]?)?(?:(?: and)? ?(\d+) gold[,.]?)?(?:(?: and)? ?(\d+) silver[,.]?)?(?:(?: and)? ?(\d+) bronze[,.]?)?(?:(?: and)? ?(\d+) copper\.)?
 #action goto DONE when ^You take a moment to reflect on the caper
 action put #var test.burgle.start $gametime;put #echo >log red Burgle start: $gametime;put #log >Burgle.log Start,$charactername,$gametime when ^You make short work of the lock on the window and slip inside|^You scale up the side of a wall, quickly slipping inside
-action evalmath test.burgle.warning $gametime - $test.burgle.start;put #var test.burgle.warning %test.burgle.warning;put #echo >log red Burgle warning: $gametime ($test.burgle.warning from entry);put #log >Burgle.log Footsteps,$charactername,$gametime,$test.burgle.warning when ^Footsteps nearby make you wonder if you're pushing your luck
-action evalmath test.burgle.caught $gametime - $test.burgle.warning;put #var test.burgle.caught %test.burgle.caught;put #echo >log red Caught burgling: $gametime ($test.burgle.caught from warning);put #log >Burgle.log Caught,$charactername,$gametime,$test.burgle.caught when ^Before you really realize what\'s going on\, your hands are firmly bound behind you|^After a moment the leader steps forward 
+action put #var test.burgle.warntime $gametime;put #evalmath test.burgle.warning $gametime - $test.burgle.start;put #echo >log red Burgle warning: $gametime ($test.burgle.warning from entry);put #log >Burgle.log Footsteps,$charactername,$gametime,$test.burgle.warning when ^Footsteps nearby make you wonder if you're pushing your luck
+action put #evalmath test.burgle.caught $gametime - $test.burgle.warntime;put #echo >log red Caught burgling: $gametime ($test.burgle.caught from warning);put #log >Burgle.log Caught,$charactername,$gametime,$test.burgle.caught when ^Before you really realize what\'s going on\, your hands are firmly bound behind you|^After a moment the leader steps forward 
 var done NOPE
 var footsteps OFF
 var successful 0
