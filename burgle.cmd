@@ -1,6 +1,6 @@
 ## Reveler's Burgle Script
-## v.4.7.1
-## 05/30/2020
+## v.4.7.2
+## 06/06/2020
 ## Discord Reveler#6969
 ##
 ## TO USE:  
@@ -700,9 +700,8 @@ PUTLOOT:
 
 NOFIT:
 	echo Could not fit looted item! Get a bigger bag.
-	if !matchre("%thing","$BURGLE_KEEP") then put drop %thing
-	if ("%done" = "NOPE") then goto LEAVE
-	else goto RETURN
+	if !matchre("%thing","$BURGLE.KEEP") then put drop %thing
+	return
 
 STAND:
      matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
