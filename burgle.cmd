@@ -1,6 +1,6 @@
 ## Reveler's Burgle Script
-## v.4.7.2
-## 06/06/2020
+## v.4.7.3
+## 06/28/2020
 ## Discord Reveler#6969
 ##
 ## TO USE:  
@@ -41,7 +41,7 @@
 
 
 
-debug 10
+#debug 10
 
 
 pause 0.2
@@ -69,9 +69,9 @@ action goto PLEA when ^The eyes of the court|PLEAD INNOCENT or PLEAD GUILTY|Your
 action goto CLANJUSTICE when ^After a moment the leader steps forward grimly
 action instant var fine 0;var platfine 0;var goldfine 0;var silverfine 0;var bronzefine 0;var copperfine 0;if ($1) then evalmath platfine $1*10000;if ($2) then evalmath goldfine $2*1000;if ($3) then evalmath silverfine $3*100;if ($4) then evalmath bronzefine $4*10;if ($5) then var copperfine $5;evalmath fine %platfine+%goldfine+%silverfine+%bronzefine+%copperfine when I pronounce a fine upon you of (?:(\d+) platinum[,.]?)?(?:(?: and)? ?(\d+) gold[,.]?)?(?:(?: and)? ?(\d+) silver[,.]?)?(?:(?: and)? ?(\d+) bronze[,.]?)?(?:(?: and)? ?(\d+) copper\.)?
 #action goto DONE when ^You take a moment to reflect on the caper
-action put #var test.burgle.start $gametime;put #echo >log red Burgle start: $gametime;put #log >Burgle.log Start,$charactername,$gametime when ^You make short work of the lock on the window and slip inside|^You scale up the side of a wall, quickly slipping inside
-action put #var test.burgle.warntime $gametime;put #evalmath test.burgle.warning $gametime - $test.burgle.start;put #echo >log red Burgle warning: $gametime ($test.burgle.warning from entry);put #log >Burgle.log Footsteps,$charactername,$gametime,$test.burgle.warning when ^Footsteps nearby make you wonder if you're pushing your luck
-action put #evalmath test.burgle.caught $gametime - $test.burgle.warntime;put #echo >log red Caught burgling: $gametime ($test.burgle.caught from warning);put #log >Burgle.log Caught,$charactername,$gametime,$test.burgle.caught when ^Before you really realize what\'s going on\, your hands are firmly bound behind you|^After a moment the leader steps forward 
+#action put #var test.burgle.start $gametime;put #log >Burgle.log Start,$charactername,$gametime when ^You make short work of the lock on the window and slip inside|^You scale up the side of a wall, quickly slipping inside
+#action put #var test.burgle.warntime $gametime;put #evalmath test.burgle.warning $gametime - $test.burgle.start;put #log >Burgle.log Footsteps,$charactername,$gametime,$test.burgle.warning when ^Footsteps nearby make you wonder if you're pushing your luck
+#action put #evalmath test.burgle.caught $gametime - $test.burgle.warntime;put -1 #log >Burgle.log Caught,$charactername,$gametime,$test.burgle.caught when ^Before you really realize what\'s going on\, your hands are firmly bound behind you|^After a moment the leader steps forward 
 var done NOPE
 var footsteps OFF
 var successful 0
@@ -146,7 +146,7 @@ BUFF:
 	{
 		match KHRICLEAR ^Your recent use of
 		send khri check
-		matchwait 3
+		matchwait 6
 		if ($concentration < 55) then gosub CONC_REGEN
 		if ($SpellTimer.KhriSilence.active = 0) then gosub KHRI SILENCE
 		if ($SpellTimer.KhriPlunder.active = 0) then gosub KHRI PLUNDER
@@ -243,7 +243,7 @@ GETREADY:
 		matchre NORING ^I could not|^What
 		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
 		put tap my %ringtype
-		matchwait 3
+		matchwait 6
 		gosub ERROR LOCKPICKS
 	}
 	if matchre("%method", "(?i)RING") && matchre("%worn", "(?i)(NO|NULL|OFF|0)") then
@@ -254,7 +254,7 @@ GETREADY:
 		matchre NORING ^I could not|^What
 		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
 		put get my %ringtype
-		matchwait 3
+		matchwait 6
 		gosub ERROR LOCKPICKS
 	}
 	if matchre("%method", "(?i)LOCKPICK") then
@@ -264,7 +264,7 @@ GETREADY:
 		matchre NOLOCKPICK ^I could not|^What
 		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
 		put get my lockpick
-		matchwait 3
+		matchwait 6
 		gosub ERROR LOCKPICKS
 	}
 	if matchre("%method", "(?i)ROPE") && matchre("%worn", "(?i)(YES|ON|1)") then
@@ -275,7 +275,7 @@ GETREADY:
 		matchre NOROPE ^I could not|^What
 		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
 		put remove my %ropetype
-		matchwait 3
+		matchwait 6
 		gosub ERROR LOCKPICKS
 	}
 	if matchre("%method", "(?i)ROPE") && matchre("%worn", "(?i)(NO|NULL|OFF|0)") then
@@ -285,7 +285,7 @@ GETREADY:
 		matchre NOROPE ^I could not|^What
 		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
 		put get my %ropetype
-		matchwait 3
+		matchwait 6
 		gosub ERROR ROPE
 	}
 	gosub error METHOD_VARIABLE
@@ -437,7 +437,7 @@ LEAVE:
 	matchre ERROR ^What were you referring to\? 
 	matchre WAIT \.\.\.wait
 	put go window
-	matchwait 3
+	matchwait 6
 	}
 	gosub moverooms %reverse(%moves)
 	math moves subtract 1
@@ -451,7 +451,7 @@ ESCAPE:
 	matchre ERROR ^What were you referring to\? 
 	matchre WAIT \.\.\.wait
 	put go window
-	matchwait 3
+	matchwait 6
 	}
 	gosub GETDIRECTION
 	gosub MOVEROOMS %direction(%moves)
