@@ -161,7 +161,10 @@ BUFF:
 	}
 	if ("$guild"="Moon Mage") then 
 	{
+		# Buff stealth with either refractive field or shadows.
+		# If you don't know, or didn't cast, refractive field then we try shadows.
 		if ($SpellTimer.RefractiveField.active = 0) then gosub CAST RF
+		if ($SpellTimer.RefractiveField.active != 1 && $SpellTimer.Shadows.active = 0) then gosub CAST SHADOW
 	}
 	goto GETREADY
 
