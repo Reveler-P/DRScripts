@@ -174,7 +174,7 @@ KHRI:
 	var last KHRI1
 	matchre KNEEL ^\[Sitting\, kneeling\, or lying down can make starting this khri easier\.\]
 	matchre RETURN ^Your hand twitches|^Slipping into the proper|^Centering your mind|^Turning inwards|^Focusing your mind
-	matchre RETURN ^You have not recovered from your previous use|^Your body is willing, but|^You're already using
+	matchre RETURN ^You have not recovered from your previous use|^Your body is willing, but|^You're already using|^Your recent use of
 	matchre WAIT \.\.\.wait|still stunned|^Sorry, you may only
 	put khri %khri
 	matchwait 5
