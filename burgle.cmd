@@ -148,7 +148,10 @@ BUFF:
 		send khri check
 		matchwait 6
 		if ($concentration < 55) then gosub CONC_REGEN
+		# Buff stealth with either silence or darken.
+		# If you don't know, or didn't apply, silence then we try darken.
 		if ($SpellTimer.KhriSilence.active = 0) then gosub KHRI SILENCE
+		if ($SpellTimer.KhriSilence.active != 1 && $SpellTimer.KhriDarken.active = 0) then gosub KHRI DARKEN
 		if ($SpellTimer.KhriPlunder.active = 0) then gosub KHRI PLUNDER
 		if ($SpellTimer.KhriSlight.active = 0) then gosub KHRI SLIGHT
 		if ($SpellTimer.KhriHasten.active = 0) then gosub KHRI HASTEN
