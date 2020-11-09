@@ -42,7 +42,7 @@
 
 
 
-#debug 10
+debug 10
 
 
 pause 0.2
@@ -242,7 +242,7 @@ GETREADY:
 	{
 		matchre HIDEPREP ^You tap (.+) you are wearing
 		matchre NOTWORN ^You tap (.*) in your
-		matchre NORING ^I could not|^What
+	    matchre NORING ^I could not|^What
 		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
 		put tap my %ringtype
 		matchwait 6
@@ -250,14 +250,7 @@ GETREADY:
 	}
 	if matchre("%method", "(?i)RING") && matchre("%worn", "(?i)(NO|NULL|OFF|0)") then
 	{
-		if matchre("%eddy","(?i)RING") then goto EDDYRING
-		matchre WORN ^But that is
-		matchre HIDEPREP ^You get
-		matchre HIDEPREP ^You are already holding that\.
-		matchre EDDYRING ^I could not|^What
-		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
-		put get my %ringtype
-		matchwait 6
+		echo YOU CANNOT BURGLE WITH A LOCKPICK RING UNLESS IT IS WORN.  CHANGE YOUR METHOD.
 		gosub ERROR LOCKPICKS
 	}
 	if matchre("%method", "(?i)LOCKPICK") then
@@ -276,7 +269,7 @@ GETREADY:
 		matchre HIDEPREP ^You sling
 		matchre HIDEPREP ^You aren\'t
 		matchre NOTWORN ^Remove what
-		matchre NOROPE ^I could not|^What
+		matchre EDDYROPE ^I could not|^What
 		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
 		put remove my %ropetype
 		matchwait 6
@@ -295,17 +288,9 @@ GETREADY:
 	}
 	gosub error METHOD_VARIABLE
 
-EDDYRING:
-	matchre HIDEPREP ^You get
-	matchre HIDEPREP ^You are already holding that\.
-	matchre NORING ^I could not|^What
-	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
-	put get my %ringtype from my portal
-	matchwait 6
-	gosub ERROR LOCKPICKS
-
 EDDYPICK:
 	matchre HIDEPREP ^You get
+	matchre HIDEPREP ^You fade in
 	matchre HIDEPREP ^You are already holding that\.
 	matchre NOLOCKPICK ^I could not|^What
 	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
@@ -315,6 +300,7 @@ EDDYPICK:
 
 EDDYROPE:
 	matchre HIDEPREP ^You get
+	matchre HIDEPREP ^You fade in
 	matchre HIDEPREP ^You are already holding that\.
 	matchre NOROPE ^I could not|^What
 	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
