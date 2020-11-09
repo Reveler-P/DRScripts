@@ -1,6 +1,6 @@
 ## Reveler's Burgle Script
-## v.4.7.3
-## 06/28/2020
+## v.4.8
+## 11/08/2020
 ## Discord Reveler#6969
 ##
 ## TO USE:  
@@ -37,7 +37,8 @@
 ##		Added option to skip rooms.  Set your variable in variable script
 ##		Added out when encountering clan justice
 ##		Added option to start burgle from inside the house as a failsafe - will immediately exit
-
+##		Added support for eddy container
+##		Added new bedroom loot
 
 
 
@@ -96,7 +97,7 @@ var rooms_captured kitchen
 var pawnmoveloop 0
 if ($standing = 0) then put stand
 var kitchenloot bowl|sieve|stove|stick|mortar|pestle|helm|knife|towel|broom|skillet|lunchbox|cylinder|sphere
-var bedroomloot pajamas|cloak|fabric|bathrobe|cube|comb|locket|bangles|box|bear|handkerchief|blanket|pillow|mirror
+var bedroomloot pajamas|cloak|fabric|bathrobe|cube|comb|locket|bangles|box|bear|handkerchief|blanket|pillow|mirror|top|bottoms|nightcap|cufflinks|razor|diary|slippers|choker|nightgown|bank
 var armoryloot stones|arrows|bolts|plate|gloves|hauberk|leathers|shield|briquet|scimitar|cudgel|crossbow|dagger|longsword|stick|hammer|sipar
 var workroomloot rod|burin|shaper|rasp|oil|apron|brush|scissors|pins|distaff|case|ledger
 var sanctumloot bracer|ring|amulet|blossom|statuette|charts|opener|orb|kaleidoscope|rod|ball|case|telescope|prism|lens
@@ -106,6 +107,7 @@ var lootpool %kitchenloot|%bedroomloot|%armoryloot|%workroomloot|%sanctumloot|%l
 
 
 #### RUN .BURGLEVARIABLES TO SET THESE UP FOR EACH CHARACTER OR JUST FILL THEM IN HERE #####
+var eddy $BURGLE.EDDY
 var pack $BURGLE.PACK
 var method $BURGLE.METHOD
 var ringtype $BURGLE.RINGTYPE
@@ -248,10 +250,11 @@ GETREADY:
 	}
 	if matchre("%method", "(?i)RING") && matchre("%worn", "(?i)(NO|NULL|OFF|0)") then
 	{
+		if matchre("%eddy","(?i)RING") then goto EDDYRING
 		matchre WORN ^But that is
 		matchre HIDEPREP ^You get
 		matchre HIDEPREP ^You are already holding that\.
-		matchre NORING ^I could not|^What
+		matchre EDDYRING ^I could not|^What
 		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
 		put get my %ringtype
 		matchwait 6
@@ -259,9 +262,10 @@ GETREADY:
 	}
 	if matchre("%method", "(?i)LOCKPICK") then
 	{
+		if matchre("%eddy","(?i)LOCKPICK") then goto EDDYPICK
 		matchre HIDEPREP ^You get
 		matchre HIDEPREP ^You are already holding that\.
-		matchre NOLOCKPICK ^I could not|^What
+		matchre EDDYPICK ^I could not|^What
 		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
 		put get my lockpick
 		matchwait 6
@@ -280,15 +284,43 @@ GETREADY:
 	}
 	if matchre("%method", "(?i)ROPE") && matchre("%worn", "(?i)(NO|NULL|OFF|0)") then
 	{
+		if matchre("%eddy","(?i)ROPE") then goto EDDYROPE
 		matchre HIDEPREP ^You get
 		matchre HIDEPREP ^You are already holding that\.
-		matchre NOROPE ^I could not|^What
+		matchre EDDYROPE ^I could not|^What
 		matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
 		put get my %ropetype
 		matchwait 6
 		gosub ERROR ROPE
 	}
 	gosub error METHOD_VARIABLE
+
+EDDYRING:
+	matchre HIDEPREP ^You get
+	matchre HIDEPREP ^You are already holding that\.
+	matchre NORING ^I could not|^What
+	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+	put get my %ringtype from my portal
+	matchwait 6
+	gosub ERROR LOCKPICKS
+
+EDDYPICK:
+	matchre HIDEPREP ^You get
+	matchre HIDEPREP ^You are already holding that\.
+	matchre NOLOCKPICK ^I could not|^What
+	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+	put get my lockpick from my portal
+	matchwait 6
+	gosub ERROR LOCKPICKS
+
+EDDYROPE:
+	matchre HIDEPREP ^You get
+	matchre HIDEPREP ^You are already holding that\.
+	matchre NOROPE ^I could not|^What
+	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
+	put get my %ropetype from my portal
+	matchwait 6
+	gosub ERROR ROPE
 	
 NOTWORN:
 	var worn NO
@@ -434,7 +466,7 @@ LEAVE:
 	if matchre("$roomname", "Kitchen") then 
 	{
 	matchre DONE ^You take a moment to reflect on the caper you just pulled as you slip out the kitchen window\.\.\.
-	matchre ERROR ^What were you referring to\? 
+	matchre ESCAPE ^What were you referring to\? 
 	matchre WAIT \.\.\.wait
 	put go window
 	matchwait 6
@@ -448,7 +480,7 @@ ESCAPE:
 	if matchre("$roomname", "Kitchen") then 
 	{
 	matchre ESCAPED ^You take a moment to reflect on the caper you just pulled as you slip out the kitchen window\.\.\.
-	matchre ERROR ^What were you referring to\? 
+	matchre ESCAPE ^What were you referring to\? 
 	matchre WAIT \.\.\.wait
 	put go window
 	matchwait 6
