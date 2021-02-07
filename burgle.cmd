@@ -1,6 +1,6 @@
 ## Reveler's Burgle Script
-## v.4.8
-## 11/08/2020
+## v.4.9
+## 02/07/2021
 ## Discord Reveler#6969
 ##
 ## TO USE:  
@@ -12,11 +12,11 @@
 ##		hit .burgle and go at it!
 ##		
 ##
-##		You need to have the latest .travel script if you want to set a burgle location
+##		BURGLE LOCATION AND PAWNING NOT SUPPORTED
 ##		You need to have Spelltimer plugin for buff checks
 ##		DISCLAIMER: NOT RESPONSIBLE FOR YOUR ASTRONOMICAL FINES
 
-##		V 4.7 updates
+##		V 4.9 updates
 ##		Robustified actions to test for errors
 ##		More guard checks
 ##		More options for worn/stored lockpick rings and ropes
@@ -38,11 +38,13 @@
 ##		Added out when encountering clan justice
 ##		Added option to start burgle from inside the house as a failsafe - will immediately exit
 ##		Added support for eddy container
-##		Added new bedroom loot
+##		Added new bedroom loots
+##		Added new kitchen loots
+##		Added ability to put certain items in your trash list to drop if looted
 
 
 
-#debug 10
+debug 10
 
 
 pause 0.2
@@ -87,6 +89,7 @@ var priorexit(sanctum)
 var priorexit(armory)
 var priorexit(library)
 var guards Gwaerd|guard|Shard sentinel|Sentinel|Elven Warden|Riverhaven Warden|Warden|Baronial guardsman|sickly tree|Muspar'i constable
+var trashitems NULL
 var item1 NULL
 var item2 NULL
 var item3 NULL
@@ -96,7 +99,7 @@ var item6 NULL
 var rooms_captured kitchen
 var pawnmoveloop 0
 if ($standing = 0) then put stand
-var kitchenloot bowl|sieve|stove|stick|mortar|pestle|helm|knife|towel|broom|skillet|lunchbox|cylinder|sphere
+var kitchenloot bowl|sieve|stove|stick|mortar|pestle|helm|knife|towel|broom|skillet|lunchbox|cylinder|sphere|vase|napkin|tankard|shakers|snare|knives|twine|cider jug|house mouse|kitchen rat|basket|recipe box
 var bedroomloot pajamas|cloak|fabric|bathrobe|cube|comb|locket|bangles|box|bear|handkerchief|blanket|pillow|mirror|top|bottoms|nightcap|cufflinks|razor|diary|slippers|choker|nightgown|bank
 var armoryloot stones|arrows|bolts|plate|gloves|hauberk|leathers|shield|briquet|scimitar|cudgel|crossbow|dagger|longsword|stick|hammer|sipar
 var workroomloot rod|burin|shaper|rasp|oil|apron|brush|scissors|pins|distaff|case|ledger
@@ -116,7 +119,8 @@ var worn $BURGLE.WORN
 var travel $BURGLE.TRAVEL
 var maxgrabs $BURGLE.MAXGRABS
 var keep $BURGLE.KEEP
-var trash $BURGLE.TRASH
+var trashall $BURGLE.TRASHALL
+var trashitems $BURGLE.TRASHITEMS
 var hideme $BURGLE.HIDE
 var skip $BURGLE.SKIP
 
@@ -658,7 +662,7 @@ STOWLOOT:
 	if !matchre("$righthand", "Empty") then 
           {
                if matchre("$righthandnoun", "%lootpool") then gosub ITEM_SET $righthand
-			   if !matchre("$righthandnoun", "(%keep|rope|lockpick|ring)") && matchre("%trash", "(?i)(YES|ON)") then put empty right
+			   if !matchre("$righthandnoun", "(%keep|rope|lockpick|ring)") && (matchre("%trashall", "(?i)(YES|ON)")||matchre("$righthandnoun", "%trashitems")) then put empty right
 			   else gosub PUTLOOT put my $righthandnoun in my %pack
 #			   if (!matchre("$righthand", "Empty") && matchre("$righthandnoun", "%lootpool")) then put empty right
 			   
@@ -666,9 +670,9 @@ STOWLOOT:
 	if !matchre("$lefthand", "Empty") then 
           {
                if matchre("$lefthandnoun", "%lootpool") then gosub ITEM_SET $lefthand
-			   if !matchre("$lefthandnoun", "(%keep|rope|lockpick|ring)") && matchre("%trash", "(?i)(YES|ON)") then put empty left
+			   if !matchre("$lefthandnoun", "(%keep|rope|lockpick|ring)") && (matchre("%trashall", "(?i)(YES|ON)")||matchre("$lefthandnoun", "%trashitems")) then put empty left
                else gosub PUTLOOT put my $lefthandnoun in my %pack
-#			   if (!matchre("$righthand", "Empty") && matchre("$lefthandnoun", "%lootpool")) then put empty left
+#			   if (!matchre("$lefthand", "Empty") && matchre("$lefthandnoun", "%lootpool")) then put empty left
           }
 #    pause 0.4
 	return
@@ -711,14 +715,14 @@ PUTLOOT:
 	matchre WAIT ^\.\.\.wait|^Sorry\,|^Please wait\.
     matchre RETURN ^You put|^You sling|^You attach|^You attempt to relax|^You rummage|^What were|^You sell|^You get
 	matchre NOWEAR ^You can\'t wear
-	matchre NOFIT ^But that\'s closed|^That\'s too heavy|too long to fit|too long\, even after stuffing it\, to fit
+	matchre NOFIT ^But that\'s closed|^That\'s too heavy|^The .* too long to fit|too long\, even after stuffing it\, to fit|^Weirdly, you can\'t manage
 	put %put
 	matchwait 5
 	return
 
 NOFIT:
 	echo Could not fit looted item! Get a bigger bag.
-	if !matchre("%thing","$BURGLE.KEEP") then put drop %thing
+	if !matchre("%put","$BURGLE.KEEP") then put drop %put
 	return
 
 STAND:

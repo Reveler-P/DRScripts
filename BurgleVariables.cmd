@@ -1,11 +1,12 @@
 ## Reveler's BurgleVariables Script
-## v.2.0 
-## 05/30/2020
+## v.2.1 
+## 02/07/020
 ## Discord Reveler#6969
 
-## v. 2.0 updates:
+## v. 2.1 updates:
 ## Added option to hide before searches
-## Added variable to drop burgled items if not in your donotpawnthis variable
+## Added variable to drop all burgled items if not in your donotpawnthis variable
+## Added variable to drop certain burgled items
 
 ## THIS IS AN INCLUDED SCRIPT IN THE BURGLE SCRIPT AND MUST BE COMPLETED BEFORE RUNNING .BURGLE.CMD
 
@@ -14,31 +15,31 @@
 #Preliminary variables - don't touch
 var skip NULL
 var donotpawnthis NULL
-var trashit NO
+var trashall NO
 ### Edit below here
 
 
 ## SET YOUR CHARACTER'S NAMES BELOW, IF NOTHING USE NULL
 ## MAKE SURE TO UPDATE EACH CHARACTERS VARIABLES INDIVIDUALLY BELOW
-var CHARACTER1 XXXXXX
-var CHARACTER2 XXXXXX
-var CHARACTER3 XXXXXX
-var CHARACTER4 XXXXXX
-var CHARACTER5 XXXXXX
-var CHARACTER6 XXXXXX
-var CHARACTER7 XXXXXX
-var CHARACTER8 XXXXXX
+var CHARACTER1 XXXX
+var CHARACTER2 XXXX
+var CHARACTER3 XXXX
+var CHARACTER4 XXXX
+var CHARACTER5 XXXX
+var CHARACTER6 XXXX
+var CHARACTER7 XXXX
+var CHARACTER8 XXXX
 
 ## SET ALL YOUR CUSTOM VARIABLES PER EACH CHARACTER IN THE BLOCKS BELOW THIS!
 ##### CHARACTER 1 VARIABLES
 if ("$charactername" = "%CHARACTER1") then 
 {
 # do you use the temporal eddy for storage of items?  If yes, list the items in an array, with LOOT for burgle loot, ROPE for burgle rope entry, RING for lockpick ring and LOCKPICK for loose lockpicks.  NULL if you don't use the eddy
-var eddy LOCKPICK|ROPE|LOOT
+var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack portal
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. VARIABLE MUST BE IN ALL CAPS
-# NOTE: This version contains an if/else statement if you want to train different skills depending on learning rates
+# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
+# NOTE: This version contains an if/else statement if you want to train different skills depending on learning rates.  IF you don't want to swap between, look at formulation in Character 3
 if ($Athletics.LearningRate >= $Locksmithing.LearningRate) then var method RING
 else var method ROPE
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
@@ -58,9 +59,11 @@ var hideme YES
 # pawn YES will try to pawn your stolen goods NOTE - PUT NO IF PAWNING THROUGH UBERCOMBAT
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
-var donotpawnthis manual|scimitar|opener|keepsake box|arrow
+var donotpawnthis manual|scimitar|opener|arrow
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
-var trashit NO
+var trashall NO
+# if you want to drop SOME things, put them here
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip NULL
 }
@@ -71,7 +74,7 @@ if ("$charactername" = "%CHARACTER2") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack haversack
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. VARIABLE MUST BE IN ALL CAPS
+# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
 if ($Athletics.LearningRate >= $Locksmithing.LearningRate) then var method LOCKPICK
 else var method ROPE
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
@@ -90,11 +93,13 @@ var hideme NO
 # pawn YES will try to pawn your stolen goods NOTE - PUT NO IF PAWNING THROUGH UBERCOMBAT
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
-var donotpawnthis case|manual|keepsake box|arrow
+var donotpawnthis case|manual|arrow
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
-var trashit NO
+var trashall NO
+# if you want to drop SOME things, put them here
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
-var skip NULL
+var skip kitchen
 }
 
 if ("$charactername" = "%CHARACTER3") then 
@@ -103,7 +108,7 @@ if ("$charactername" = "%CHARACTER3") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack carry
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. VARIABLE MUST BE IN ALL CAPS
+# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
 var method rope
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
 var ringtype lockpick ring
@@ -121,9 +126,11 @@ var hideme NO
 # pawn YES will try to pawn your stolen goods NOTE - PUT NO IF PAWNING THROUGH UBERCOMBAT
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
-var donotpawnthis keepsake box|arrow
+var donotpawnthis arrow
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
-var trashit NO
+var trashall NO
+# if you want to drop SOME things, put them here
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip NULL
 }
@@ -134,7 +141,7 @@ if ("$charactername" = "%CHARACTER4") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack haversack
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. VARIABLE MUST BE IN ALL CAPS
+# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
 var method RING
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
 var ringtype lockpick ring
@@ -142,7 +149,7 @@ var ringtype lockpick ring
 # DANCING ROPES DO NOT WORK
 var ropetype heavy rope
 # Toggle for worn lockpick ring/rope
-var worn NO
+var worn YES
 # Travel location should be the city and the roomid.  Pick a room where you *know* there will not be a guard, or leave NULL NOTE: LEAVE NULL IF USING WITHIN UBERCOMBAT
 var travel NULL
 # maximum times to try to search surfaces
@@ -152,9 +159,11 @@ var hideme NO
 # pawn YES will try to pawn your stolen goods NOTE - PUT NO IF PAWNING THROUGH UBERCOMBAT
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
-var donotpawnthis case|manual|keepsake box|arrow
+var donotpawnthis case|manual|arrow
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
-var trashit NO
+var trashall NO
+# if you want to drop SOME things, put them here
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip NULL
 }
@@ -165,7 +174,7 @@ if ("$charactername" = "%CHARACTER5") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack carryall
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. VARIABLE MUST BE IN ALL CAPS
+# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
 var method RING
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
 var ringtype lockpick ring
@@ -183,9 +192,11 @@ var hideme NO
 # pawn YES will try to pawn your stolen goods NOTE - PUT NO IF PAWNING THROUGH UBERCOMBAT
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
-var donotpawnthis keepsake box|arrow
+var donotpawnthis arrow
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
-var trashit NO
+var trashall NO
+# if you want to drop SOME things, put them here
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip NULL
 }
@@ -196,7 +207,7 @@ if ("$charactername" = "%CHARACTER6") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack rucksack
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. VARIABLE MUST BE IN ALL CAPS
+# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
 var method ROPE
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
 var ringtype lockpick ring
@@ -214,9 +225,11 @@ var hideme NO
 # pawn YES will try to pawn your stolen goods NOTE - PUT NO IF PAWNING THROUGH UBERCOMBAT
 var pawn YES
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
-var donotpawnthis keepsake box|arrow
+var donotpawnthis arrow
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
-var trashit NO
+var trashall NO
+# if you want to drop SOME things, put them here
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip NULL
 }
@@ -227,7 +240,7 @@ if ("$charactername" = "%CHARACTER7") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack shadows
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. VARIABLE MUST BE IN ALL CAPS
+# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
 var method lockpick
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
 var ringtype lockpick ring
@@ -245,9 +258,11 @@ var hideme YES
 # pawn YES will try to pawn your stolen goods NOTE - PUT NO IF PAWNING THROUGH UBERCOMBAT
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
-var donotpawnthis bolt|keepsake box|arrow
+var donotpawnthis bolt|arrow|book
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
-var trashit NO
+var trashall NO
+# if you want to drop SOME things, put them here
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip kitchen
 }
@@ -260,7 +275,7 @@ if ("$charactername" = "%CHARACTER8") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack duffel bag
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. VARIABLE MUST BE IN ALL CAPS
+# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
 if ($Athletics.Ranks >= $Locksmithing.Ranks) then var method RING
 else var method ROPE
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
@@ -280,15 +295,16 @@ var hideme NO
 # pawn YES will try to pawn your stolen goods NOTE - PUT NO IF PAWNING THROUGH UBERCOMBAT
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
-var donotpawnthis keepsake box|arrow|stone
+var donotpawnthis arrow|stone
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
-var trashit NO
+var trashall NO
+# if you want to drop SOME things, put them here
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip NULL
 }
 
 ######### END USER VARIABLES DON'T TOUCH ANYTHING ELSE
-
 
 
 put #var BURGLE.EDDY %eddy
@@ -301,6 +317,7 @@ put #var BURGLE.TRAVEL %travel
 put #var BURGLE.MAXGRABS %maxgrabs
 put #var BURGLE.PAWN %pawn
 put #var BURGLE.KEEP %donotpawnthis
-put #var BURGLE.TRASH %trashit
+put #var BURGLE.TRASHALL %trashall
+put #var BURGLE.TRASHITEMS %trashthings
 put #var BURGLE.HIDE %hideme
 put #var BURGLE.SKIP %skip
