@@ -99,7 +99,7 @@ var trashall NO
 # if you want to drop SOME things, put them here
 var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
-var skip kitchen
+var skip NULL
 }
 
 if ("$charactername" = "%CHARACTER3") then 
