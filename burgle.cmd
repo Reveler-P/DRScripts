@@ -445,6 +445,7 @@ MOVEROOMS:
 	var movement $0
 	MOVEROOMS1:
 	var last MOVEROOMS1
+	matchre ESCAPE ^Please rephrase
 	matchre RETURN ^Obvious
 	matchre RETURN ^You can't
 	matchre WAIT \.\.\.wait
@@ -457,6 +458,7 @@ LEAVE:
 	{
 	matchre DONE ^You take a moment to reflect on the caper you just pulled as you slip out the kitchen window\.\.\.
 	matchre ESCAPE ^What were you referring to\? 
+	matchre ESCAPE ^Please rephrase
 	matchre WAIT \.\.\.wait
 	put go window
 	matchwait 6
@@ -662,7 +664,7 @@ STOWLOOT:
 	if !matchre("$righthand", "Empty") then 
           {
                if matchre("$righthandnoun", "%lootpool") then gosub ITEM_SET $righthand
-			   if !matchre("$righthandnoun", "(%keep|rope|lockpick|ring)") && (matchre("%trashall", "(?i)(YES|ON)")||matchre("$righthandnoun", "%trashitems")) then put empty right
+			   if !matchre("$righthandnoun", "(%keep|rope|lockpick|ring)") && (matchre("%trashall", "(?i)(YES|ON)")||matchre("$righthandnoun", "%trashitems")) then gosub DROP right
 			   else gosub PUTLOOT put my $righthandnoun in my %pack
 #			   if (!matchre("$righthand", "Empty") && matchre("$righthandnoun", "%lootpool")) then put empty right
 			   
@@ -670,7 +672,7 @@ STOWLOOT:
 	if !matchre("$lefthand", "Empty") then 
           {
                if matchre("$lefthandnoun", "%lootpool") then gosub ITEM_SET $lefthand
-			   if !matchre("$lefthandnoun", "(%keep|rope|lockpick|ring)") && (matchre("%trashall", "(?i)(YES|ON)")||matchre("$lefthandnoun", "%trashitems")) then put empty left
+			   if !matchre("$lefthandnoun", "(%keep|rope|lockpick|ring)") && (matchre("%trashall", "(?i)(YES|ON)")||matchre("$lefthandnoun", "%trashitems")) then gosub DROP left
                else gosub PUTLOOT put my $lefthandnoun in my %pack
 #			   if (!matchre("$lefthand", "Empty") && matchre("$lefthandnoun", "%lootpool")) then put empty left
           }
@@ -746,6 +748,15 @@ STORAGEERROR:
 	echo #####
 	echo ###################################
 	goto LEAVE
+
+DROP:
+	 var drophand $0
+     matchre DROP ^\.\.\.wait|^Sorry\,|^Please wait\.
+     matchre return ^You drop 
+     matchre DROP ^\[If you still wish to drop it
+     put empty %drophand
+     matchwait 5
+     return	
 
 WAIT:
 #	pause .01
