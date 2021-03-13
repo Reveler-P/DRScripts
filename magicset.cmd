@@ -218,5 +218,5 @@ if ("$charactername" = "XXXX") then
 	  put #var MAGIC.Sorcery.exp.stop 20
 	}
 	put #var MAGIC.SET DONE
-}
+
 
