@@ -1,12 +1,14 @@
 ## Reveler's BurgleVariables Script
-## v.2.1 
-## 02/07/020
+## v.3.0 
+## 04/03/2021
 ## Discord Reveler#6969
 
 ## v. 2.1 updates:
 ## Added option to hide before searches
 ## Added variable to drop all burgled items if not in your donotpawnthis variable
 ## Added variable to drop certain burgled items
+## v. 3.0 updates:
+## Changed var for burgle type to RING|LOCKPICK|ROPE|TOGGLE - with "TOGGLE" will pick the skill with lowest learning rate.  Must have worn lockpick ring for TOGGLE.
 
 ## THIS IS AN INCLUDED SCRIPT IN THE BURGLE SCRIPT AND MUST BE COMPLETED BEFORE RUNNING .BURGLE.CMD
 
@@ -38,18 +40,16 @@ if ("$charactername" = "%CHARACTER1") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack portal
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
-# NOTE: This version contains an if/else statement if you want to train different skills depending on learning rates.  IF you don't want to swap between, look at formulation in Character 3
-if ($Athletics.LearningRate >= $Locksmithing.LearningRate) then var method RING
-else var method ROPE
+# method can be RING, LOCKPICK, ROPE, or TOGGLE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics.
+# TOGGLE will swap between RING and ROPE - must set your lockpick stacker variable and rope variable
+var method TOGGLE
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
 var ringtype lockpick ring
 # Use your adjective-noun for your rope
 # DANCING ROPES DO NOT WORK
 var ropetype heavy rope
-# Toggle for worn lockpick ring/rope
-if ("%method" = "RING") then var worn YES
-else var worn NO
+# Toggle for worn rope - Note - MUST wear lockpick ring
+var worn NO
 # Travel location should be the city and the roomid.  Pick a room where you *know* there will not be a guard, or leave NULL NOTE: LEAVE NULL IF USING WITHIN UBERCOMBAT
 var travel NULL
 # maximum times to try to search surfaces
@@ -59,13 +59,13 @@ var hideme YES
 # pawn YES will try to pawn your stolen goods NOTE - PUT NO IF PAWNING THROUGH UBERCOMBAT
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
-var donotpawnthis manual|scimitar|opener|arrow
+var donotpawnthis manual|scimitar|opener|arrow|book
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
 var trashall NO
 # if you want to drop SOME things, put them here
-var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle|basket
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
-var skip NULL
+var skip kitchen
 }
 
 if ("$charactername" = "%CHARACTER2") then 
@@ -74,15 +74,15 @@ if ("$charactername" = "%CHARACTER2") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack haversack
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
-if ($Athletics.LearningRate >= $Locksmithing.LearningRate) then var method LOCKPICK
-else var method ROPE
+# method can be RING, LOCKPICK, ROPE, or TOGGLE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics.
+# TOGGLE will swap between RING and ROPE - must set your lockpick stacker variable and rope variable
+var method TOGGLE
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
 var ringtype lockpick ring
 # Use your adjective-noun for your rope
 # DANCING ROPES DO NOT WORK
 var ropetype braided rope
-# Toggle for worn lockpick ring/rope
+# Toggle for worn rope - Note - MUST wear lockpick ring
 var worn NO
 # Travel location should be the city and the roomid.  Pick a room where you *know* there will not be a guard, or leave NULL NOTE: LEAVE NULL IF USING WITHIN UBERCOMBAT
 var travel NULL
@@ -97,7 +97,7 @@ var donotpawnthis case|manual|arrow
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
 var trashall NO
 # if you want to drop SOME things, put them here
-var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle|basket|tote
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip NULL
 }
@@ -108,14 +108,15 @@ if ("$charactername" = "%CHARACTER3") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack carry
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
-var method rope
+# method can be RING, LOCKPICK, ROPE, or TOGGLE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics.
+# TOGGLE will swap between RING and ROPE - must set your lockpick stacker variable and rope variable
+var method ROPE
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
 var ringtype lockpick ring
 # Use your adjective-noun for your rope
 # DANCING ROPES DO NOT WORK
 var ropetype heavy rope
-# Toggle for worn lockpick ring/rope
+# Toggle for worn rope - Note - MUST wear lockpick ring
 var worn NO
 # Travel location should be the city and the roomid.  Pick a room where you *know* there will not be a guard, or leave NULL NOTE: LEAVE NULL IF USING WITHIN UBERCOMBAT
 var travel NULL
@@ -126,11 +127,11 @@ var hideme NO
 # pawn YES will try to pawn your stolen goods NOTE - PUT NO IF PAWNING THROUGH UBERCOMBAT
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
-var donotpawnthis arrow
+var donotpawnthis arrow|book
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
 var trashall NO
 # if you want to drop SOME things, put them here
-var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle|basket
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip NULL
 }
@@ -141,14 +142,15 @@ if ("$charactername" = "%CHARACTER4") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack haversack
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
+# method can be RING, LOCKPICK, ROPE, or TOGGLE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics.
+# TOGGLE will swap between RING and ROPE - must set your lockpick stacker variable and rope variable
 var method RING
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
 var ringtype lockpick ring
 # Use your adjective-noun for your rope
 # DANCING ROPES DO NOT WORK
 var ropetype heavy rope
-# Toggle for worn lockpick ring/rope
+# Toggle for worn rope - Note - MUST wear lockpick ring
 var worn YES
 # Travel location should be the city and the roomid.  Pick a room where you *know* there will not be a guard, or leave NULL NOTE: LEAVE NULL IF USING WITHIN UBERCOMBAT
 var travel NULL
@@ -159,11 +161,11 @@ var hideme NO
 # pawn YES will try to pawn your stolen goods NOTE - PUT NO IF PAWNING THROUGH UBERCOMBAT
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
-var donotpawnthis case|manual|arrow
+var donotpawnthis case|manual|arrow|book
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
 var trashall NO
 # if you want to drop SOME things, put them here
-var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle|basket
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip NULL
 }
@@ -174,14 +176,15 @@ if ("$charactername" = "%CHARACTER5") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack carryall
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
+# method can be RING, LOCKPICK, ROPE, or TOGGLE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics.
+# TOGGLE will swap between RING and ROPE - must set your lockpick stacker variable and rope variable
 var method RING
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
 var ringtype lockpick ring
 # Use your adjective-noun for your rope
 # DANCING ROPES DO NOT WORK
 var ropetype braided rope
-# Toggle for worn lockpick ring/rope
+# Toggle for worn rope - Note - MUST wear lockpick ring
 var worn YES
 # Travel location should be the city and the roomid.  Pick a room where you *know* there will not be a guard, or leave NULL NOTE: LEAVE NULL IF USING WITHIN UBERCOMBAT
 var travel NULL
@@ -192,11 +195,11 @@ var hideme NO
 # pawn YES will try to pawn your stolen goods NOTE - PUT NO IF PAWNING THROUGH UBERCOMBAT
 var pawn NO
 # put loot you DO NOT wish to sell here if you use pawning within .BURGLE.  The full lootpool variable is in .burgle. Separate with |
-var donotpawnthis arrow
+var donotpawnthis arrow|book
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
 var trashall NO
 # if you want to drop SOME things, put them here
-var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle|basket
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip NULL
 }
@@ -207,14 +210,15 @@ if ("$charactername" = "%CHARACTER6") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack rucksack
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
+# method can be RING, LOCKPICK, ROPE, or TOGGLE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics.
+# TOGGLE will swap between RING and ROPE - must set your lockpick stacker variable and rope variable
 var method ROPE
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
 var ringtype lockpick ring
 # Use your adjective-noun for your rope
 # DANCING ROPES DO NOT WORK
 var ropetype heavy rope
-# Toggle for worn lockpick ring/rope
+# Toggle for worn rope - Note - MUST wear lockpick ring
 var worn NO
 # Travel location should be the city and the roomid.  Pick a room where you *know* there will not be a guard, or leave NULL NOTE: LEAVE NULL IF USING WITHIN UBERCOMBAT
 var travel NULL
@@ -229,7 +233,7 @@ var donotpawnthis arrow
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
 var trashall NO
 # if you want to drop SOME things, put them here
-var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle|basket
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip NULL
 }
@@ -240,14 +244,15 @@ if ("$charactername" = "%CHARACTER7") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack shadows
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
-var method lockpick
+# method can be RING, LOCKPICK, ROPE, or TOGGLE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics.
+# TOGGLE will swap between RING and ROPE - must set your lockpick stacker variable and rope variable
+var method LOCKPICK
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
 var ringtype lockpick ring
 # Use your adjective-noun for your rope
 # DANCING ROPES DO NOT WORK
 var ropetype heavy rope
-# Toggle for worn lockpick ring/rope
+# Toggle for worn rope - Note - MUST wear lockpick ring
 var worn NO
 # Travel location should be the city and the roomid.  Pick a room where you *know* there will not be a guard, or leave NULL NOTE: LEAVE NULL IF USING WITHIN UBERCOMBAT
 var travel NULL
@@ -262,7 +267,7 @@ var donotpawnthis bolt|arrow|book
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
 var trashall NO
 # if you want to drop SOME things, put them here
-var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle|basket
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip kitchen
 }
@@ -275,17 +280,16 @@ if ("$charactername" = "%CHARACTER8") then
 var eddy NULL
 # where do you want to store your stolen items?  If storing in your eddy, you must use noun "portal"
 var pack duffel bag
-# method can be RING, LOCKPICK, or ROPE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics. 
-if ($Athletics.Ranks >= $Locksmithing.Ranks) then var method RING
-else var method ROPE
+# method can be RING, LOCKPICK, ROPE, or TOGGLE; RING (uses lockpick stacker) and LOCKPICK (uses spare lockpicks) teach locks, ROPE teaches athletics.
+# TOGGLE will swap between RING and ROPE - must set your lockpick stacker variable and rope variable
+var method TOGGLE
 # ringtype is the type of lockpick ring you have.  It can be any of the following: lockpick ring|lockpick case|lockpick ankle-cuff|golden key
 var ringtype lockpick ring
 # Use your adjective-noun for your rope
 # DANCING ROPES DO NOT WORK
 var ropetype heavy rope
-# Toggle for worn lockpick ring/rope
-if ("%method" = "RING") then var worn YES
-else var worn YES
+# Toggle for worn rope - Note - MUST wear lockpick ring
+var worn YES
 # Travel location should be the city and the roomid.  Pick a room where you *know* there will not be a guard, or leave NULL NOTE: LEAVE NULL IF USING WITHIN UBERCOMBAT
 var travel NULL
 # maximum times to try to search surfaces
@@ -299,13 +303,19 @@ var donotpawnthis arrow|stone
 # if you want to drop everything EXCEPT the "donotpawnthis" items, put YES here
 var trashall NO
 # if you want to drop SOME things, put them here
-var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle
+var trashthings cylinder|sphere|napkin|tankard|shakers|snare|twine|mouse|rat|pestle|basket
 # Rooms you do not want to search.  Choose from following: kitchen|bedroom|workroom|sanctum|armory|library
 var skip NULL
 }
 
 ######### END USER VARIABLES DON'T TOUCH ANYTHING ELSE
 
+
+if matchre("%method", "(?i)toggle") then
+{
+	if ($Athletics.LearningRate >= $Locksmithing.LearningRate) then var method RING
+else var method ROPE
+}
 
 put #var BURGLE.EDDY %eddy
 put #var BURGLE.PACK %pack
