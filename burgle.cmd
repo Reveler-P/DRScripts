@@ -1,6 +1,6 @@
 ## Reveler's Burgle Script
-## v.4.10
-## 04/03/2021
+## v.5.0
+## 07/13/2021
 ## Discord Reveler#6969
 ##
 ## TO USE:  
@@ -10,7 +10,6 @@
 ##		PLEASE MESSAGE ME IF YOU FIND A GUARD NOT LISTED IN THE GUARD VARIABLE BELOW OR LOOT NOT LISTED IN LOOT VARIABLES BELOW
 ##		YOU need to confirm there's no guard in NEARBY rooms (hint: HUNT or be sure it's a no-guard room)
 ##		hit .burgle and go at it!
-##		
 ##
 ##		BURGLE LOCATION AND PAWNING NOT SUPPORTED
 ##		You need to have Spelltimer plugin for buff checks
@@ -41,10 +40,14 @@
 ##		Added new bedroom loots
 ##		Added new kitchen loots
 ##		Added ability to put certain items in your trash list to drop if looted
+##
+##		V 5.0 updates 
+##		Updated pawning, still mostly untested  DO NOT USE PAWNING IF USING UBERCOMBAT
+##		Fixed known bug with dropping trash loot
 
 
 
-#debug 10
+debug 10
 
 
 pause 0.2
@@ -99,7 +102,7 @@ var item6 NULL
 var rooms_captured kitchen
 var pawnmoveloop 0
 if ($standing = 0) then put stand
-var kitchenloot bowl|sieve|stove|stick|mortar|pestle|helm|knife|towel|broom|skillet|lunchbox|cylinder|sphere|vase|napkin|tankard|shakers|snare|knives|twine|cider jug|house mouse|kitchen rat|basket|recipe box|basket|canvas tote|tote
+var kitchenloot bowl|sieve|stove|stick|mortar|pestle|helm|knife|towel|broom|skillet|lunchbox|cylinder|sphere|vase|napkin|tankard|shakers|snare|knives|twine|cider\sjug|house\smouse|kitchen\srat|basket|recipe\sbox|basket|canvas\stote|tote
 var bedroomloot pajamas|cloak|fabric|bathrobe|cube|comb|locket|bangles|box|bear|handkerchief|blanket|pillow|mirror|top|bottoms|nightcap|cufflinks|razor|diary|slippers|choker|nightgown|bank
 var armoryloot stones|arrows|bolts|plate|gloves|hauberk|leathers|shield|briquet|scimitar|cudgel|crossbow|dagger|longsword|stick|hammer|sipar
 var workroomloot rod|burin|shaper|rasp|oil|apron|brush|scissors|pins|distaff|case|ledger
@@ -123,6 +126,10 @@ var trashall $BURGLE.TRASHALL
 var trashitems $BURGLE.TRASHITEMS
 var hideme $BURGLE.HIDE
 var skip $BURGLE.SKIP
+var home $BURGLE.HOME
+if (matchre("$scriptlist", "ubercombat\.cmd") then var pawn NO 
+else var pawn $BURGLE.PAWN
+
 
 if !matchre("%method", "(?i)(RING|ROPE|LOCKPICK)") then
 {
@@ -145,7 +152,9 @@ CHECKTIMER:
 TRAVEL:
 	if matchre("%travel" = "(?i)NULL") then goto BUFF
 	else put .travel %travel
-	waitforre ^YOU ARRIVED\!
+	match BUFF ^YOU ARRIVED\!
+	matchwait 20
+	goto TRAVEL
 	
 BUFF:
 	if ("$guild"="Thief") then
@@ -315,7 +324,7 @@ NOTWORN:
 	}
 	var worn NO
 	goto %last
-
+	
 WORN:
 	var worn YES
 	goto %last
@@ -476,6 +485,7 @@ ESCAPE:
 	matchre WAIT \.\.\.wait
 	put go window
 	matchwait 6
+	goto ESCAPE
 	}
 	gosub GETDIRECTION
 	gosub MOVEROOMS %direction(%moves)
@@ -542,7 +552,7 @@ DONE_2:
 	if matchre("%method", "(?i)(LOCKPICK|RING)") then echo #####       Locksmithing: $Locksmithing.LearningRate/34
 	echo #####
 	echo ###################################
-    if matchre("$BURGLE.PAWN", "(?i)(YES|ON|1)") then goto PAWN
+    if matchre("%pawn", "(?i)(YES|ON|1)") then goto PAWN
 DONE_3:
 	matchre burgletimer ^You should wait at least (.+) roisaen for the heat to die down\.
 	put burgle recall
@@ -576,7 +586,7 @@ BURGLETIMER:
 	
 PAWN:
 	 var last pawn
-     if matchre("$BURGLE.PAWN", "(?i)(NO|NULL|0|OFF)") then goto DONE_3
+     if matchre("%pawn", "(?i)(NO|NULL|0|OFF)") then goto DONE_3
 	 if ("%successful" = 0) then 
 	 {
 		echo ######################
@@ -592,29 +602,38 @@ PAWN:
      echo ######################
      pause 0.1
 	 PAWN_1:
-	 matchre PAWN_2 ^YOU HAVE ARRIVED\!
+	 matchre PAWN_2 ^YOU ARRIVED
 	 matchre WAIT ^\.\.\.wait|^Sorry,|^Please wait\.
 	 matchre PAWNMOVELOOP ^MOVE FAILED
 	 matchre PAWNMOVELOOP ^DESTINATION NOT FOUND
-     put #goto pawn
-	 matchwait 15
-	 goto PAWNMOVELOOP
+     put .travel %home pawn
+	 matchwait 40
+	 goto PAWN
 PAWN_2:
      if ($invisible = 1) then gosub STOP_INVIS
 	 var n 1
      pause 0.5
 	 pawnloop:
-     if ("%item%n" != "NULL") then gosub PAWN_IT %item%n
+     if (matchre("%item%n", "NULL") || matchre("%item%n", "%trashitems") || matchre("%item%n", "%keep")) then math n add 1
+	 else gosub PAWN_IT %item%n
 	 if (%n <= %successful) then goto pawnloop
 	 goto DONE_3
 PAWN_IT:
-if (!matchre("%item%n", "$BURGLE.KEEP")) then
+if (!matchre("%item%n", "%keep")) then
 	{
+		if matchre("%item%n", "jug") then var item jug
+		if matchre("%item%n", "tote") then var item tote
+		if matchre("%itemvv", "bank") then var item bank
+		if matchre("%item%n", "box") then var item box
 		gosub put get %item%n from my %pack
+		pause 0.5
+		if matchre("$righthand", "recipe box") then gosub DUMPBOX
 		gosub put sell %item%n
-		gosub put put %item%n in bucket
+		pause 0.5
+		if !matchre("$righthand", "Empty") then gosub put put %item%n in bucket
 	}
 	math n add 1
+	pause 0.1		 
 	return
 PAWNMOVELOOP:
 	math pawnmoveloop add 1
@@ -626,6 +645,13 @@ PAWNMOVELOOP:
 	 goto DONE_3
 	}
 	goto PAWN_1
+
+DUMPBOX:
+	gosub put open my box
+	gosub put get key from my box
+	gosub put key in bucket
+	gosub put drop key
+	return
 
 ##### UTILITY MODULES
 CONC_REGEN:
@@ -652,7 +678,6 @@ EMPTYHANDS:
 	if matchre("$righthandnoun|$lefthandnoun", "%ringtype") then gosub put stow %ringtype
 	if !matchre("$righthand", "Empty") then gosub put stow right
 	if !matchre("$lefthand", "Empty") then gosub put stow left
-#    pause 0.4
 	return
 
 STOWLOOT:
@@ -724,7 +749,7 @@ PUTLOOT:
 	matchre WAIT ^\.\.\.wait|^Sorry,|^Please wait\.
     matchre RETURN ^You put|^You sling|^You attach|^You attempt to relax|^You rummage|^What were|^You sell|^You get
 	matchre NOWEAR ^You can\'t wear
-	matchre NOFIT ^But that\'s closed|^That\'s too heavy|^The .* too long to fit|too long\, even after stuffing it\, to fit|^Weirdly, you can\'t manage
+	matchre NOFIT ^But that\'s closed|^That\'s too heavy|^The .* too long to fit|too long\, even after stuffing it\, to fit|^Weirdly, you can\'t manage|^There isn\'t any more room
 	put %put
 	matchwait 5
 	return
@@ -758,9 +783,13 @@ STORAGEERROR:
 
 DROP:
 	 var drophand $0
-     matchre DROP ^\.\.\.wait|^Sorry,|^Please wait\.
+	 DROP1:
+	 var last DROP1
+     matchre DROP1 ^\.\.\.wait|^Sorry,|^Please wait\.
      matchre return ^You drop 
-     matchre DROP ^\[If you still wish to drop it
+     matchre DROP1 ^\[If you still wish to drop it
+	 matchre return ^You can only empty
+	 matchre DROP1 ^Trying to go unnoticed, are you\?
      put empty %drophand
      matchwait 5
      return	
